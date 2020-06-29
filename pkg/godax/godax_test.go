@@ -72,38 +72,38 @@ func TestClient_ListAccounts(t *testing.T) {
 				Currency:  "BTC",
 				Balance:   "0.00000000000",
 				Available: "123.456789",
-				Hold:      "hodling",
+				Hold:      "0.101",
 			}, {
 				ID:        "543c3da9-a71d-4a4c-b6e7-edc132ff704e",
 				Currency:  "ETH",
 				Balance:   "1.300006",
 				Available: "9000.67685938262624",
-				Hold:      "hodling",
+				Hold:      "0.101",
 			}, {
 				ID:        "dcbe61c2-a1bd-444c-b41a-3c6b2363afd6",
 				Currency:  "BAT",
 				Balance:   "9999.677773333",
 				Available: "9000.67685938262624",
-				Hold:      "hodling",
+				Hold:      "0.101",
 			}},
 			wantRaw: `[{
                 "id": "766b7a10-06bb-4b1d-a4b3-679d025352ad",
                 "currency": "BTC",
                 "balance": "0.00000000000",
                 "available": "123.456789",
-                "hold": "hodling"
+                "hold": "0.101"
             },{
                 "id": "543c3da9-a71d-4a4c-b6e7-edc132ff704e",
                 "currency": "ETH",
                 "balance": "1.300006",
                 "available": "9000.67685938262624",
-                "hold": "hodling"
+                "hold": "0.101"
             },{
                 "id": "dcbe61c2-a1bd-444c-b41a-3c6b2363afd6",
                 "currency": "BAT",
                 "balance": "9999.677773333",
                 "available": "9000.67685938262624",
-                "hold": "hodling"
+                "hold": "0.101"
             }]`,
 		},
 	}
@@ -126,6 +126,79 @@ func TestClient_ListAccounts(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.ListAccounts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_GetAccount(t *testing.T) {
+	type fields struct {
+		baseRestURL string
+		baseWsURL   string
+		key         string
+		secret      string
+		passphrase  string
+		httpClient  *http.Client
+	}
+	genFields := func() fields {
+		return fields{
+			baseRestURL: baseRestURL,
+			baseWsURL:   baseWsURL,
+			key:         key,
+			secret:      secret,
+			passphrase:  passphrase,
+		}
+	}
+	type args struct {
+		accountID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    Account
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:    "when a successful call is made to GetAccount and no account is found",
+			fields:  genFields(),
+			args:    args{accountID: "1q2w3e4r"},
+			want:    Account{},
+			wantRaw: `{}`,
+		},
+		{
+			name:   "when a successful call is made to GetAccount and an account is found",
+			fields: genFields(),
+			args:   args{accountID: "a1b2c3d4"},
+			want:   Account{},
+			wantRaw: `{
+                "id": "a1b2c3d4",
+                "balance": "1.100",
+                "holds": "0.100",
+                "available": "101.56",
+                "currency": "USD"
+            }`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+			got, err := c.GetAccount(tt.args.accountID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetAccount() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetAccount() = %v, want %v", got, tt.want)
 			}
 		})
 	}
