@@ -63,6 +63,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 // or decreases your account balance. If an entry is the result of a trade (match, fee), the details
 // field on an AccountActivity will contain additional information about the trade. Items are paginated
 // and sorted latest first. This endpoint requires either the "view" or "trade" permission.
+// TODO: paginate
 func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
@@ -74,4 +75,23 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 	}
 
 	return c.getAccountHistory(accountID, method, path, timestamp, sig)
+}
+
+// GetAccountHolds lists holds of an account that belong to the same profile as the API key.
+// Holds are placed on an account for any active orders or pending withdraw requests. As an
+// order is filled, the hold amount is updated. If an order is canceled, any remaining hold
+// is removed. For a withdraw, once it is completed, the hold is removed. This endpoint
+// requires either the "view" or "trade" permission.
+// TODO: paginate
+func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
+	method := http.MethodGet
+	path := "/accounts/" + accountID + "/holds"
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+
+	sig, err := c.generateSignature(timestamp, path, method, "")
+	if err != nil {
+		return []AccountHold{}, err
+	}
+
+	return c.getAccountHolds(accountID, method, path, timestamp, sig)
 }

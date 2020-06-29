@@ -18,12 +18,16 @@ import (
 type ListAccount struct {
 	// ID - the account ID associated with the coinbase pro profile
 	ID string `json:"id"`
+
 	// Currency - the currency of the account
 	Currency string `json:"currency"`
+
 	// Balance - the total funds in the account
 	Balance string `json:"balance"`
+
 	// Available - funds available to withdraw or trade
 	Available string `json:"available"`
+
 	// Hold - funds on hold (not available for use)
 	Hold string `json:"hold"`
 }
@@ -41,12 +45,16 @@ type ListAccount struct {
 type Account struct {
 	// ID - the account ID associated with the coinbase pro profile
 	ID string `json:"id"`
+
 	// Balance - the total funds in the account
 	Balance string `json:"balance"`
+
 	// Holds - funds on hold (not available for use)
 	Holds string `json:"holds"`
+
 	// Available - funds available to withdraw or trade
 	Available string `json:"available"`
+
 	// Currency - the currency of the account
 	Currency string `json:"currency"`
 }
@@ -69,12 +77,16 @@ type Account struct {
 type AccountActivity struct {
 	// ID - the account ID associated with the coinbase pro profile
 	ID string `json:"id"`
+
 	// CreatedAt - when did this activity happen
 	CreatedAt string `json:"created_at"`
+
 	// Amount - the amount used in this activity
 	Amount string `json:"amount"`
+
 	// Balance - the total funds available
 	Balance string `json:"balance"`
+
 	// Type can be one of the following:
 	// "transfer"   - Funds moved to/from Coinbase to Coinbase Pro
 	// "match"      - Funds moved as a result of a trade
@@ -82,6 +94,7 @@ type AccountActivity struct {
 	// "rebate"     - Fee rebate as per our fee schedule
 	// "conversion"	- Funds converted between fiat currency and a stablecoin/
 	Type string `json:"type"`
+
 	// Details - If an entry is the result of a trade (match, fee),
 	// the details field will contain additional information about the trade.
 	Details ActivityDetail `json:"details"`
@@ -91,10 +104,48 @@ type AccountActivity struct {
 type ActivityDetail struct {
 	// OrderID - the order ID related to the activity
 	OrderID string `json:"order_id"`
+
 	// TradeID - the trade ID related to the activity
 	TradeID string `json:"trade_id"`
+
 	// ProductID - the product ID related to the activity
 	ProductID string `json:"product_id"`
+}
+
+// AccountHold ...
+/*
+	{
+        "id": "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
+        "account_id": "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
+        "created_at": "2014-11-06T10:34:47.123456Z",
+        "updated_at": "2014-11-06T10:40:47.123456Z",
+        "amount": "4.23",
+        "type": "order",
+        "ref": "0a205de4-dd35-4370-a285-fe8fc375a273",
+    }
+*/
+type AccountHold struct {
+	// ID - the hold ID
+	ID string `json:"id"`
+
+	// Account ID - the account ID associated with the coinbase pro profile
+	AccountID string `json:"account_id"`
+
+	// CreatedAt - when this hold happened
+	CreatedAt string `json:"created_at"`
+
+	// Updated - the last time this hold was updated
+	UpdatedAt string `json:"updated_at"`
+
+	// Amount - the amount in the hold
+	Amount string `json:"amount"`
+
+	// Type - type of the hold will indicate why the hold exists. The hold type is order
+	// for holds related to open orders and transfer for holds related to a withdraw.
+	Type string `json:"type"`
+
+	// Ref - The ref field contains the id of the order or transfer which created the hold.
+	Ref string `json:"ref"`
 }
 
 // listAccounts gets a list of trading accounts from the profile associated with the API key.
@@ -143,4 +194,20 @@ func (c *Client) getAccountHistory(accountID, method, path, timestamp, signature
 	}
 
 	return aa, nil
+}
+
+// getAccountHolds lists holds of an account that belong to the same profile as the API key
+func (c *Client) getAccountHolds(accountID, method, path, timestamp, signature string) ([]AccountHold, error) {
+	res, err := c.get(path, timestamp, signature)
+	if err != nil {
+		return []AccountHold{}, err
+	}
+	defer res.Body.Close()
+
+	var ah []AccountHold
+	if err := json.NewDecoder(res.Body).Decode(&ah); err != nil {
+		return []AccountHold{}, err
+	}
+
+	return ah, nil
 }
