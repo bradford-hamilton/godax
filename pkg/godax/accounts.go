@@ -53,45 +53,48 @@ type Account struct {
 
 // AccountActivity represents an increase or decrease in your account balance.
 /*
-	{
-        "id": "100",
-        "created_at": "2014-11-07T08:19:27.028459Z",
-        "amount": "0.001",
-        "balance": "239.669",
-        "type": "fee",
-        "details": {
-            "order_id": "d50ec984-77a8-460a-b958-66f114b0de9b",
-            "trade_id": "74",
-            "product_id": "BTC-USD"
-        }
-    }
+   {
+       "id": "100",
+       "created_at": "2014-11-07T08:19:27.028459Z",
+       "amount": "0.001",
+       "balance": "239.669",
+       "type": "fee",
+       "details": {
+           "order_id": "d50ec984-77a8-460a-b958-66f114b0de9b",
+           "trade_id": "74",
+           "product_id": "BTC-USD"
+       }
+   }
 */
 type AccountActivity struct {
 	// ID - the account ID associated with the coinbase pro profile
-	ID string
+	ID string `json:"id"`
 	// CreatedAt - when did this activity happen
-	CreatedAt string
+	CreatedAt string `json:"created_at"`
 	// Amount - the amount used in this activity
-	Amount string
+	Amount string `json:"amount"`
 	// Balance - the total funds available
-	Balance string
+	Balance string `json:"balance"`
 	// Type can be one of the following:
 	// "transfer"   - Funds moved to/from Coinbase to Coinbase Pro
 	// "match"      - Funds moved as a result of a trade
 	// "fee"        - Fee as a result of a trade
 	// "rebate"     - Fee rebate as per our fee schedule
 	// "conversion"	- Funds converted between fiat currency and a stablecoin/
-	Type string
+	Type string `json:"type"`
 	// Details - If an entry is the result of a trade (match, fee),
 	// the details field will contain additional information about the trade.
-	Details ActivityDetail
+	Details ActivityDetail `json:"details"`
 }
 
 // ActivityDetail describes important activity metadata (order, trade, and product IDs)
 type ActivityDetail struct {
-	OrderID   string
-	TradeID   string
-	ProductID string
+	// OrderID - the order ID related to the activity
+	OrderID string `json:"order_id"`
+	// TradeID - the trade ID related to the activity
+	TradeID string `json:"trade_id"`
+	// ProductID - the product ID related to the activity
+	ProductID string `json:"product_id"`
 }
 
 // listAccounts gets a list of trading accounts from the profile associated with the API key.
@@ -101,10 +104,12 @@ func (c *Client) listAccounts(method, path, timestamp, signature string) ([]List
 		return []ListAccount{}, err
 	}
 	defer res.Body.Close()
+
 	var acts []ListAccount
 	if err := json.NewDecoder(res.Body).Decode(&acts); err != nil {
 		return []ListAccount{}, err
 	}
+
 	return acts, nil
 }
 
@@ -115,10 +120,12 @@ func (c *Client) getAccount(accountID, method, path, timestamp, signature string
 		return Account{}, err
 	}
 	defer res.Body.Close()
+
 	var act Account
 	if err := json.NewDecoder(res.Body).Decode(&act); err != nil {
 		return Account{}, err
 	}
+
 	return act, nil
 }
 
@@ -129,9 +136,11 @@ func (c *Client) getAccountHistory(accountID, method, path, timestamp, signature
 		return []AccountActivity{}, err
 	}
 	defer res.Body.Close()
+
 	var aa []AccountActivity
 	if err := json.NewDecoder(res.Body).Decode(&aa); err != nil {
 		return []AccountActivity{}, err
 	}
+
 	return aa, nil
 }
