@@ -14,7 +14,7 @@ type Client struct {
 	key         string
 	secret      string
 	passphrase  string
-	httpClient  *http.Client
+	httpClient  HTTPClient
 }
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.

@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+// HTTPClient is a simple http interface that both live and test code can implement
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 func newClient(sandbox bool) (*Client, error) {
 	c := &Client{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
