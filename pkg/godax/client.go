@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const userAgent = "godax coinbase pro client"
+
 // HTTPClient is a simple http interface that both live and test code can implement
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -28,7 +30,7 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 	req.Header.Set("CB-ACCESS-SIGN", signature)
 	req.Header.Set("CB-ACCESS-TIMESTAMP", timestamp)
 	req.Header.Set("CB-ACCESS-PASSPHRASE", c.passphrase)
-	req.Header.Add("User-Agent", "godax coinbase pro client")
+	req.Header.Add("User-Agent", userAgent)
 }
 
 func (c *Client) get(path, timestamp, signature string) (*http.Response, error) {

@@ -111,6 +111,7 @@ func TestClient_ListAccounts(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient := MockResponse(tt.wantRaw)
+
 			c := &Client{
 				baseRestURL: tt.fields.baseRestURL,
 				baseWsURL:   tt.fields.baseWsURL,
@@ -119,11 +120,19 @@ func TestClient_ListAccounts(t *testing.T) {
 				passphrase:  tt.fields.passphrase,
 				httpClient:  mockClient,
 			}
+
 			got, err := c.ListAccounts()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.ListAccounts() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.ListAccounts() = %v, want %v", got, tt.want)
 			}
@@ -171,7 +180,13 @@ func TestClient_GetAccount(t *testing.T) {
 			name:   "when a successful call is made to GetAccount and an account is found",
 			fields: genFields(),
 			args:   args{accountID: "a1b2c3d4"},
-			want:   Account{},
+			want: Account{
+				ID:        "a1b2c3d4",
+				Balance:   "1.100",
+				Holds:     "0.100",
+				Available: "101.56",
+				Currency:  "USD",
+			},
 			wantRaw: `{
                 "id": "a1b2c3d4",
                 "balance": "1.100",
@@ -184,6 +199,7 @@ func TestClient_GetAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient := MockResponse(tt.wantRaw)
+
 			c := &Client{
 				baseRestURL: tt.fields.baseRestURL,
 				baseWsURL:   tt.fields.baseWsURL,
@@ -192,14 +208,47 @@ func TestClient_GetAccount(t *testing.T) {
 				passphrase:  tt.fields.passphrase,
 				httpClient:  mockClient,
 			}
+
 			got, err := c.GetAccount(tt.args.accountID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.GetAccount() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.GetAccount() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func validateHeaders(t *testing.T, client *Client) {
+	compareHeader(t, client, "CB-ACCESS-KEY", key)
+	compareHeader(t, client, "CB-ACCESS-PASSPHRASE", passphrase)
+	compareHeader(t, client, "User-Agent", userAgent)
+	validateHeaderPresent(t, client, "CB-ACCESS-SIGN")
+	validateHeaderPresent(t, client, "CB-ACCESS-TIMESTAMP")
+}
+
+func compareHeader(t *testing.T, c *Client, wantHeader string, wantContent string) {
+	if c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader) != wantContent {
+		t.Errorf(
+			"%s header should be %s, was '%s'\n",
+			wantHeader,
+			wantContent,
+			c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader),
+		)
+	}
+}
+
+func validateHeaderPresent(t *testing.T, c *Client, wantHeader string) {
+	if c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader) == "" {
+		t.Errorf("%s header should not be empty\n", wantHeader)
 	}
 }
