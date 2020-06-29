@@ -26,6 +26,19 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 	req.Header.Add("User-Agent", "godax coinbase pro client")
 }
 
+func (c *Client) get(path, timestamp, signature string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, c.baseRestURL+path, nil)
+	if err != nil {
+		return nil, err
+	}
+	c.setHeaders(req, timestamp, signature)
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // generateSignature generates the signature for the CB-ACCESS-SIGN header.
 // 1. base64 decode the client coinbase pro secret
 // 2. create a sha256 HMAC using the base64 decoded secret
