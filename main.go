@@ -19,4 +19,12 @@ func main() {
 
 	account, err := client.GetAccount(accounts[0].ID)
 	fmt.Println(account)
+
+	his, err := client.GetAccountHistory(accounts[1].ID)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Println("history!!!!!!!!!!!", his)
 }

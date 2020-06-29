@@ -54,6 +54,49 @@ type Account struct {
 	Currency string `json:"currency"`
 }
 
+// AccountActivity represents an increase or decrease in your account balance.
+/*
+	{
+        "id": "100",
+        "created_at": "2014-11-07T08:19:27.028459Z",
+        "amount": "0.001",
+        "balance": "239.669",
+        "type": "fee",
+        "details": {
+            "order_id": "d50ec984-77a8-460a-b958-66f114b0de9b",
+            "trade_id": "74",
+            "product_id": "BTC-USD"
+        }
+    }
+*/
+type AccountActivity struct {
+	// ID - the account ID associated with the coinbase pro profile
+	ID string
+	// CreatedAt - when did this activity happen
+	CreatedAt string
+	// Amount - the amount used in this activity
+	Amount string
+	// Balance - the total funds available
+	Balance string
+	// Type can be one of the following:
+	// "transfer"   - Funds moved to/from Coinbase to Coinbase Pro
+	// "match"      - Funds moved as a result of a trade
+	// "fee"        - Fee as a result of a trade
+	// "rebate"     - Fee rebate as per our fee schedule
+	// "conversion"	- Funds converted between fiat currency and a stablecoin/
+	Type string
+	// Details - If an entry is the result of a trade (match, fee),
+	// the details field will contain additional information about the trade.
+	Details ActivityDetail
+}
+
+// ActivityDetail describes important activity metadata (order, trade, and product IDs)
+type ActivityDetail struct {
+	OrderID   string
+	TradeID   string
+	ProductID string
+}
+
 // listAccounts gets a list of trading accounts from the profile associated with the API key.
 func (c *Client) listAccounts() ([]ListAccount, error) {
 	path := "/accounts"
@@ -108,4 +151,32 @@ func (c *Client) getAccount(accountID string) (Account, error) {
 	json.NewDecoder(res.Body).Decode(&act)
 
 	return act, nil
+}
+
+// getAccountHistory retrieves information for a single account.
+func (c *Client) getAccountHistory(accountID string) ([]AccountActivity, error) {
+	path := "/accounts/" + accountID + "/ledger"
+
+	req, err := http.NewRequest(http.MethodGet, c.baseRestURL+path, nil)
+	if err != nil {
+		return []AccountActivity{}, err
+	}
+
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	sig, err := c.generateSignature(timestamp, path, http.MethodGet, "")
+	if err != nil {
+		return []AccountActivity{}, err
+	}
+
+	c.setHeaders(req, timestamp, sig)
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return []AccountActivity{}, err
+	}
+	defer res.Body.Close()
+
+	var aa []AccountActivity
+	json.NewDecoder(res.Body).Decode(&aa)
+
+	return aa, nil
 }

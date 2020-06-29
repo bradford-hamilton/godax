@@ -37,3 +37,11 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 func (c *Client) GetAccount(accountID string) (Account, error) {
 	return c.getAccount(accountID)
 }
+
+// GetAccountHistory lists account activity of the API key's profile.
+// Account activity either increases or decreases your account balance.
+// Items are paginated and sorted latest first.
+// This endpoint requires either the "view" or "trade" permission.
+func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) {
+	return c.getAccountHistory(accountID)
+}
