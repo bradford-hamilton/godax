@@ -13,6 +13,10 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	accounts, err := client.ListAccounts()
-	fmt.Printf("%+v", accounts)
+	fmt.Println(accounts)
+
+	account, err := client.GetAccount(accounts[0].ID)
+	fmt.Println(account)
 }
