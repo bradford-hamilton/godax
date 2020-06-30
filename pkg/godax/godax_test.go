@@ -377,6 +377,138 @@ func TestClient_GetAccountHistory(t *testing.T) {
 	}
 }
 
+func TestClient_GetAccountHolds(t *testing.T) {
+	type fields struct {
+		baseRestURL string
+		baseWsURL   string
+		key         string
+		secret      string
+		passphrase  string
+		httpClient  *http.Client
+	}
+	genFields := func() fields {
+		return fields{
+			baseRestURL: baseRestURL,
+			baseWsURL:   baseWsURL,
+			key:         key,
+			secret:      secret,
+			passphrase:  passphrase,
+		}
+	}
+	type args struct {
+		accountID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []AccountHold
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:    "when a successful call is made to GetAccountHolds and no holds are found",
+			fields:  genFields(),
+			args:    args{accountID: "1q2w3e4r"},
+			want:    []AccountHold{},
+			wantRaw: `[]`,
+		},
+		{
+			name:   "when a successful call is made to GetAccountHolds and one hold is found",
+			fields: genFields(),
+			args:   args{accountID: "1q2w3e4r"},
+			want: []AccountHold{{
+				ID:        "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
+				AccountID: "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
+				CreatedAt: "2014-11-06T10:34:47.123456Z",
+				UpdatedAt: "2014-11-06T10:40:47.123456Z",
+				Amount:    "4.23",
+				Type:      "order",
+				Ref:       "0a205de4-dd35-4370-a285-fe8fc375a273",
+			}},
+			wantRaw: `[{
+                "id": "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
+                "account_id": "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
+                "created_at": "2014-11-06T10:34:47.123456Z",
+                "updated_at": "2014-11-06T10:40:47.123456Z",
+                "amount": "4.23",
+                "type": "order",
+                "ref": "0a205de4-dd35-4370-a285-fe8fc375a273"
+            }]`,
+		},
+		{
+			name:   "when a successful call is made to GetAccountHolds and multiple holds are found",
+			fields: genFields(),
+			args:   args{accountID: "1q2w3e4r"},
+			want: []AccountHold{{
+				ID:        "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
+				AccountID: "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
+				CreatedAt: "2014-11-06T10:34:47.123456Z",
+				UpdatedAt: "2014-11-06T10:40:47.123456Z",
+				Amount:    "4.23",
+				Type:      "order",
+				Ref:       "0a205de4-dd35-4370-a285-fe8fc375a273",
+			}, {
+				ID:        "3d58f10b-3d9a-4d38-bb51-c8800f5ad4ca",
+				AccountID: "b6f8fee0-f47f-481a-98ee-08d397681edb",
+				CreatedAt: "2015-10-06T10:34:47.123456Z",
+				UpdatedAt: "2015-10-06T10:40:47.123456Z",
+				Amount:    "4.23",
+				Type:      "order",
+				Ref:       "0a205de4-dd35-4370-a285-fe8fc375a273",
+			}},
+			wantRaw: `[{
+                "id": "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
+                "account_id": "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
+                "created_at": "2014-11-06T10:34:47.123456Z",
+                "updated_at": "2014-11-06T10:40:47.123456Z",
+                "amount": "4.23",
+                "type": "order",
+                "ref": "0a205de4-dd35-4370-a285-fe8fc375a273"
+            },
+            {
+                "id": "3d58f10b-3d9a-4d38-bb51-c8800f5ad4ca",
+                "account_id": "b6f8fee0-f47f-481a-98ee-08d397681edb",
+                "created_at": "2015-10-06T10:34:47.123456Z",
+                "updated_at": "2015-10-06T10:40:47.123456Z",
+                "amount": "4.23",
+                "type": "order",
+                "ref": "0a205de4-dd35-4370-a285-fe8fc375a273"
+            }]`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetAccountHolds(tt.args.accountID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetAccountHolds() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetAccountHolds() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func validateHeaders(t *testing.T, client *Client) {
 	compareHeader(t, client, "CB-ACCESS-KEY", key)
 	compareHeader(t, client, "CB-ACCESS-PASSPHRASE", passphrase)
