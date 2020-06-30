@@ -228,6 +228,155 @@ func TestClient_GetAccount(t *testing.T) {
 	}
 }
 
+func TestClient_GetAccountHistory(t *testing.T) {
+	type fields struct {
+		baseRestURL string
+		baseWsURL   string
+		key         string
+		secret      string
+		passphrase  string
+		httpClient  *http.Client
+	}
+	genFields := func() fields {
+		return fields{
+			baseRestURL: baseRestURL,
+			baseWsURL:   baseWsURL,
+			key:         key,
+			secret:      secret,
+			passphrase:  passphrase,
+		}
+	}
+	type args struct {
+		accountID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []AccountActivity
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:    "when a successful call is made to GetAccountHistory and no history is found",
+			fields:  genFields(),
+			args:    args{accountID: "1q2w3e4r"},
+			want:    []AccountActivity{},
+			wantRaw: `[]`,
+		},
+		{
+			name:   "when a successful call is made to GetAccountHistory and one history is found",
+			fields: genFields(),
+			args:   args{accountID: "a1b2c3d4"},
+			want: []AccountActivity{{
+				ID:        "100",
+				CreatedAt: "2014-11-07T08:19:27.028459Z",
+				Amount:    "0.001",
+				Balance:   "239.669",
+				Type:      "fee",
+				Details: ActivityDetail{
+					OrderID:   "d50ec984-77a8-460a-b958-66f114b0de9b",
+					TradeID:   "74",
+					ProductID: "BTC-USD",
+				},
+			}},
+			wantRaw: `[{
+                "id": "100",
+                "created_at": "2014-11-07T08:19:27.028459Z",
+                "amount": "0.001",
+                "balance": "239.669",
+                "type": "fee",
+                "details": {
+                    "order_id": "d50ec984-77a8-460a-b958-66f114b0de9b",
+                    "trade_id": "74",
+                    "product_id": "BTC-USD"
+                }
+            }]`,
+		},
+		{
+			name:   "when a successful call is made to GetAccountHistory and multiple histories are found",
+			fields: genFields(),
+			args:   args{accountID: "a1b2c3d4"},
+			want: []AccountActivity{{
+				ID:        "100",
+				CreatedAt: "2014-11-07T08:19:27.028459Z",
+				Amount:    "0.001",
+				Balance:   "239.669",
+				Type:      "fee",
+				Details: ActivityDetail{
+					OrderID:   "d50ec984-77a8-460a-b958-66f114b0de9b",
+					TradeID:   "74",
+					ProductID: "BTC-USD",
+				},
+			}, {
+				ID:        "80",
+				CreatedAt: "2015-12-04T08:19:27.028459Z",
+				Amount:    "0.011",
+				Balance:   "4059.212345",
+				Type:      "fee",
+				Details: ActivityDetail{
+					OrderID:   "8b9258f8-811b-429b-810d-71fede464b29",
+					TradeID:   "99",
+					ProductID: "BTC-ETH",
+				},
+			}},
+			wantRaw: `[{
+                "id": "100",
+                "created_at": "2014-11-07T08:19:27.028459Z",
+                "amount": "0.001",
+                "balance": "239.669",
+                "type": "fee",
+                "details": {
+                    "order_id": "d50ec984-77a8-460a-b958-66f114b0de9b",
+                    "trade_id": "74",
+                    "product_id": "BTC-USD"
+                }
+            },{
+                "id": "80",
+                "created_at": "2015-12-04T08:19:27.028459Z",
+                "amount": "0.011",
+                "balance": "4059.212345",
+                "type": "fee",
+                "details": {
+                    "order_id": "8b9258f8-811b-429b-810d-71fede464b29",
+                    "trade_id": "99",
+                    "product_id": "BTC-ETH"
+                }
+            }]`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetAccountHistory(tt.args.accountID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetAccountHistory() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetAccountHistory() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func validateHeaders(t *testing.T, client *Client) {
 	compareHeader(t, client, "CB-ACCESS-KEY", key)
 	compareHeader(t, client, "CB-ACCESS-PASSPHRASE", passphrase)
