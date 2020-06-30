@@ -156,12 +156,12 @@ func (c *Client) listAccounts(method, path, timestamp, signature string) ([]List
 	}
 	defer res.Body.Close()
 
-	var acts []ListAccount
-	if err := json.NewDecoder(res.Body).Decode(&acts); err != nil {
+	var accounts []ListAccount
+	if err := json.NewDecoder(res.Body).Decode(&accounts); err != nil {
 		return []ListAccount{}, err
 	}
 
-	return acts, nil
+	return accounts, nil
 }
 
 // getAccount retrieves information for a single account.
@@ -172,12 +172,12 @@ func (c *Client) getAccount(accountID, method, path, timestamp, signature string
 	}
 	defer res.Body.Close()
 
-	var act Account
-	if err := json.NewDecoder(res.Body).Decode(&act); err != nil {
+	var account Account
+	if err := json.NewDecoder(res.Body).Decode(&account); err != nil {
 		return Account{}, err
 	}
 
-	return act, nil
+	return account, nil
 }
 
 // getAccountHistory lists account activity of the API key's profile
@@ -188,12 +188,12 @@ func (c *Client) getAccountHistory(accountID, method, path, timestamp, signature
 	}
 	defer res.Body.Close()
 
-	var aa []AccountActivity
-	if err := json.NewDecoder(res.Body).Decode(&aa); err != nil {
+	var activities []AccountActivity
+	if err := json.NewDecoder(res.Body).Decode(&activities); err != nil {
 		return []AccountActivity{}, err
 	}
 
-	return aa, nil
+	return activities, nil
 }
 
 // getAccountHolds lists holds of an account that belong to the same profile as the API key
@@ -204,10 +204,10 @@ func (c *Client) getAccountHolds(accountID, method, path, timestamp, signature s
 	}
 	defer res.Body.Close()
 
-	var ah []AccountHold
-	if err := json.NewDecoder(res.Body).Decode(&ah); err != nil {
+	var holds []AccountHold
+	if err := json.NewDecoder(res.Body).Decode(&holds); err != nil {
 		return []AccountHold{}, err
 	}
 
-	return ah, nil
+	return holds, nil
 }

@@ -25,14 +25,6 @@ func newClient(sandbox bool) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) setHeaders(req *http.Request, timestamp string, signature string) {
-	req.Header.Set("CB-ACCESS-KEY", c.key)
-	req.Header.Set("CB-ACCESS-SIGN", signature)
-	req.Header.Set("CB-ACCESS-TIMESTAMP", timestamp)
-	req.Header.Set("CB-ACCESS-PASSPHRASE", c.passphrase)
-	req.Header.Add("User-Agent", userAgent)
-}
-
 func (c *Client) get(path, timestamp, signature string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, c.baseRestURL+path, nil)
 	if err != nil {
@@ -44,6 +36,14 @@ func (c *Client) get(path, timestamp, signature string) (*http.Response, error) 
 		return nil, err
 	}
 	return res, nil
+}
+
+func (c *Client) setHeaders(req *http.Request, timestamp string, signature string) {
+	req.Header.Set("CB-ACCESS-KEY", c.key)
+	req.Header.Set("CB-ACCESS-SIGN", signature)
+	req.Header.Set("CB-ACCESS-TIMESTAMP", timestamp)
+	req.Header.Set("CB-ACCESS-PASSPHRASE", c.passphrase)
+	req.Header.Set("User-Agent", userAgent)
 }
 
 // generateSignature generates the signature for the CB-ACCESS-SIGN header.
@@ -62,6 +62,7 @@ func (c *Client) generateSignature(timestamp, path, method, body string) (string
 
 	hash := hmac.New(sha256.New, secret)
 	msg := []byte(timestamp + method + path + body)
+
 	if _, err = hash.Write(msg); err != nil {
 		return "", err
 	}
