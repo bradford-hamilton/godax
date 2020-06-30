@@ -149,7 +149,7 @@ type AccountHold struct {
 }
 
 // listAccounts gets a list of trading accounts from the profile associated with the API key.
-func (c *Client) listAccounts(method, path, timestamp, signature string) ([]ListAccount, error) {
+func (c *Client) listAccounts(timestamp, method, path, signature string) ([]ListAccount, error) {
 	res, err := c.get(path, timestamp, signature)
 	if err != nil {
 		return []ListAccount{}, err
@@ -165,7 +165,7 @@ func (c *Client) listAccounts(method, path, timestamp, signature string) ([]List
 }
 
 // getAccount retrieves information for a single account.
-func (c *Client) getAccount(accountID, method, path, timestamp, signature string) (Account, error) {
+func (c *Client) getAccount(accountID, timestamp, method, path, signature string) (Account, error) {
 	res, err := c.get(path, timestamp, signature)
 	if err != nil {
 		return Account{}, err
@@ -181,7 +181,7 @@ func (c *Client) getAccount(accountID, method, path, timestamp, signature string
 }
 
 // getAccountHistory lists account activity of the API key's profile
-func (c *Client) getAccountHistory(accountID, method, path, timestamp, signature string) ([]AccountActivity, error) {
+func (c *Client) getAccountHistory(accountID, timestamp, method, path, signature string) ([]AccountActivity, error) {
 	res, err := c.get(path, timestamp, signature)
 	if err != nil {
 		return []AccountActivity{}, err
@@ -197,7 +197,7 @@ func (c *Client) getAccountHistory(accountID, method, path, timestamp, signature
 }
 
 // getAccountHolds lists holds of an account that belong to the same profile as the API key
-func (c *Client) getAccountHolds(accountID, method, path, timestamp, signature string) ([]AccountHold, error) {
+func (c *Client) getAccountHolds(accountID, timestamp, method, path, signature string) ([]AccountHold, error) {
 	res, err := c.get(path, timestamp, signature)
 	if err != nil {
 		return []AccountHold{}, err

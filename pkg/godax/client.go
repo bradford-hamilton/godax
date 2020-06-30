@@ -54,7 +54,7 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 //   - message body can be omitted (typically for GET requests)
 // 4. write the result to the hash and sum it
 // 5. base64 encoded the digest
-func (c *Client) generateSignature(timestamp, path, method, body string) (string, error) {
+func (c *Client) generateSignature(timestamp, method, path, body string) (string, error) {
 	secret, err := base64.StdEncoding.DecodeString(c.secret)
 	if err != nil {
 		return "", err
