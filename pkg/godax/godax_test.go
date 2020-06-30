@@ -23,7 +23,7 @@ func TestClient_ListAccounts(t *testing.T) {
 		passphrase  string
 		httpClient  *http.Client
 	}
-	genFields := func() fields {
+	defaultFields := func() fields {
 		return fields{
 			baseRestURL: baseRestURL,
 			baseWsURL:   baseWsURL,
@@ -42,13 +42,13 @@ func TestClient_ListAccounts(t *testing.T) {
 	}{
 		{
 			name:    "when a successful call is made to ListAccounts with no results",
-			fields:  genFields(),
+			fields:  defaultFields(),
 			want:    []ListAccount{},
 			wantRaw: `[]`,
 		},
 		{
 			name:   "when a successful call is made to ListAccounts with one account",
-			fields: genFields(),
+			fields: defaultFields(),
 			want: []ListAccount{{
 				ID:        "f1f2404a-7de7-4cf6-81f9-5cb0256c8cea",
 				Currency:  "BTC",
@@ -66,7 +66,7 @@ func TestClient_ListAccounts(t *testing.T) {
 		},
 		{
 			name:   "when a successful call is made to ListAccounts with many accounts",
-			fields: genFields(),
+			fields: defaultFields(),
 			want: []ListAccount{{
 				ID:        "766b7a10-06bb-4b1d-a4b3-679d025352ad",
 				Currency:  "BTC",
@@ -149,7 +149,7 @@ func TestClient_GetAccount(t *testing.T) {
 		passphrase  string
 		httpClient  *http.Client
 	}
-	genFields := func() fields {
+	defaultFields := func() fields {
 		return fields{
 			baseRestURL: baseRestURL,
 			baseWsURL:   baseWsURL,
@@ -171,14 +171,14 @@ func TestClient_GetAccount(t *testing.T) {
 	}{
 		{
 			name:    "when a successful call is made to GetAccount and no account is found",
-			fields:  genFields(),
+			fields:  defaultFields(),
 			args:    args{accountID: "1q2w3e4r"},
 			want:    Account{},
 			wantRaw: `{}`,
 		},
 		{
 			name:   "when a successful call is made to GetAccount and an account is found",
-			fields: genFields(),
+			fields: defaultFields(),
 			args:   args{accountID: "a1b2c3d4"},
 			want: Account{
 				ID:        "a1b2c3d4",
@@ -237,7 +237,7 @@ func TestClient_GetAccountHistory(t *testing.T) {
 		passphrase  string
 		httpClient  *http.Client
 	}
-	genFields := func() fields {
+	defaultFields := func() fields {
 		return fields{
 			baseRestURL: baseRestURL,
 			baseWsURL:   baseWsURL,
@@ -259,14 +259,14 @@ func TestClient_GetAccountHistory(t *testing.T) {
 	}{
 		{
 			name:    "when a successful call is made to GetAccountHistory and no history is found",
-			fields:  genFields(),
+			fields:  defaultFields(),
 			args:    args{accountID: "1q2w3e4r"},
 			want:    []AccountActivity{},
 			wantRaw: `[]`,
 		},
 		{
 			name:   "when a successful call is made to GetAccountHistory and one history is found",
-			fields: genFields(),
+			fields: defaultFields(),
 			args:   args{accountID: "a1b2c3d4"},
 			want: []AccountActivity{{
 				ID:        "100",
@@ -295,7 +295,7 @@ func TestClient_GetAccountHistory(t *testing.T) {
 		},
 		{
 			name:   "when a successful call is made to GetAccountHistory and multiple histories are found",
-			fields: genFields(),
+			fields: defaultFields(),
 			args:   args{accountID: "a1b2c3d4"},
 			want: []AccountActivity{{
 				ID:        "100",
@@ -386,7 +386,7 @@ func TestClient_GetAccountHolds(t *testing.T) {
 		passphrase  string
 		httpClient  *http.Client
 	}
-	genFields := func() fields {
+	defaultFields := func() fields {
 		return fields{
 			baseRestURL: baseRestURL,
 			baseWsURL:   baseWsURL,
@@ -408,14 +408,14 @@ func TestClient_GetAccountHolds(t *testing.T) {
 	}{
 		{
 			name:    "when a successful call is made to GetAccountHolds and no holds are found",
-			fields:  genFields(),
+			fields:  defaultFields(),
 			args:    args{accountID: "1q2w3e4r"},
 			want:    []AccountHold{},
 			wantRaw: `[]`,
 		},
 		{
 			name:   "when a successful call is made to GetAccountHolds and one hold is found",
-			fields: genFields(),
+			fields: defaultFields(),
 			args:   args{accountID: "1q2w3e4r"},
 			want: []AccountHold{{
 				ID:        "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
@@ -438,7 +438,7 @@ func TestClient_GetAccountHolds(t *testing.T) {
 		},
 		{
 			name:   "when a successful call is made to GetAccountHolds and multiple holds are found",
-			fields: genFields(),
+			fields: defaultFields(),
 			args:   args{accountID: "1q2w3e4r"},
 			want: []AccountHold{{
 				ID:        "82dcd140-c3c7-4507-8de4-2c529cd1a28f",

@@ -33,14 +33,14 @@ func NewSandboxClient() (*Client, error) {
 func (c *Client) ListAccounts() ([]ListAccount, error) {
 	method := http.MethodGet
 	path := "/accounts"
-	ts := strconv.FormatInt(time.Now().Unix(), 10)
+	timestamp := unixTime()
 
-	sig, err := c.generateSignature(ts, path, method, "")
+	sig, err := c.generateSignature(timestamp, path, method, "")
 	if err != nil {
 		return []ListAccount{}, err
 	}
 
-	return c.listAccounts(method, path, ts, sig)
+	return c.listAccounts(method, path, timestamp, sig)
 }
 
 // GetAccount retrieves information for a single account. Use this endpoint when you know the
@@ -49,7 +49,7 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 func (c *Client) GetAccount(accountID string) (Account, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	timestamp := unixTime()
 
 	sig, err := c.generateSignature(timestamp, path, method, "")
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	timestamp := unixTime()
 
 	sig, err := c.generateSignature(timestamp, path, method, "")
 	if err != nil {
@@ -86,7 +86,7 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/holds"
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	timestamp := unixTime()
 
 	sig, err := c.generateSignature(timestamp, path, method, "")
 	if err != nil {
@@ -94,4 +94,8 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	}
 
 	return c.getAccountHolds(accountID, method, path, timestamp, sig)
+}
+
+func unixTime() string {
+	return strconv.FormatInt(time.Now().Unix(), 10)
 }
