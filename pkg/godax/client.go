@@ -1,6 +1,7 @@
 package godax
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -15,6 +16,12 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+// CoinbaseErrRes represents the shape that comes back when a status code is non-200
+type CoinbaseErrRes struct {
+	// Message is an error string
+	Message string `json:"message"`
+}
+
 func newClient(sandbox bool) (*Client, error) {
 	c := &Client{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
@@ -25,8 +32,8 @@ func newClient(sandbox bool) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) get(path, timestamp, signature string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, c.baseRestURL+path, nil)
+func (c *Client) do(timestamp, method, path, signature string, body []byte) (*http.Response, error) {
+	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +51,8 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 	req.Header.Set("CB-ACCESS-TIMESTAMP", timestamp)
 	req.Header.Set("CB-ACCESS-PASSPHRASE", c.passphrase)
 	req.Header.Set("User-Agent", userAgent)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 }
 
 // generateSig generates the signature for the CB-ACCESS-SIGN header.

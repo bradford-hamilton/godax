@@ -1,5 +1,12 @@
 package godax
 
+import (
+	"fmt"
+	"net/http"
+
+	"gopkg.in/square/go-jose.v2/json"
+)
+
 // Order represents a trading account for a coinbase pro profile.
 /*
 	{
@@ -43,6 +50,7 @@ type Order struct {
 	Settled bool `json:"settled"`
 
 	// OrderParams represent all the fields available to send in a PlaceOrder call.
+	// They are also attached to orders returned from coinbase after creating, listing, etc.
 	OrderParams
 }
 
@@ -115,6 +123,27 @@ type MarketOrderParams struct {
 }
 
 // placeOrder ...
-func (c *Client) placeOrder(timestamp, method, path, signature string) ([]ListAccount, error) {
-	return nil, nil
+func (c *Client) placeOrder(timestamp, method, path, signature string, body []byte) (Order, error) {
+	res, err := c.do(timestamp, method, path, signature, body)
+	if err != nil {
+		return Order{}, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return orderError(res)
+	}
+
+	var order Order
+	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
+		return Order{}, err
+	}
+
+	return order, nil
+}
+
+func orderError(res *http.Response) (Order, error) {
+	var err CoinbaseErrRes
+	json.NewDecoder(res.Body).Decode(&err)
+	return Order{}, fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
 }

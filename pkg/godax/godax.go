@@ -1,10 +1,11 @@
 package godax
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
+
+	"go-review.googlesource.com/go/src/encoding/json"
 )
 
 // Client is the main export of godax. All its fields are unexported.
@@ -102,8 +103,22 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 // will be put on hold for the duration of the order. How much and which funds are put on
 // hold depends on the order type and parameters specified. This endpoint requires the
 // "trade" permission.
-func (c *Client) PlaceOrder(params Order) (Order, error) {
-	return Order{}, errors.New("TODO")
+func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
+	timestamp := unixTime()
+	method := http.MethodPost
+	path := "/orders"
+
+	body, err := json.Marshal(order)
+	if err != nil {
+		return Order{}, err
+	}
+
+	sig, err := c.generateSig(timestamp, method, path, string(body))
+	if err != nil {
+		return Order{}, err
+	}
+
+	return c.placeOrder(timestamp, method, path, sig, body)
 }
 
 func unixTime() string {
