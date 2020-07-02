@@ -14,24 +14,53 @@ const (
 	passphrase  = "1q2w3e4r"
 )
 
+type fields struct {
+	baseRestURL string
+	baseWsURL   string
+	key         string
+	secret      string
+	passphrase  string
+	httpClient  *http.Client
+}
+
+func defaultFields() fields {
+	return fields{
+		baseRestURL: baseRestURL,
+		baseWsURL:   baseWsURL,
+		key:         key,
+		secret:      secret,
+		passphrase:  passphrase,
+	}
+}
+
+func validateHeaders(t *testing.T, client *Client) {
+	compareHeader(t, client, "CB-ACCESS-KEY", key)
+	compareHeader(t, client, "CB-ACCESS-PASSPHRASE", passphrase)
+	compareHeader(t, client, "User-Agent", userAgent)
+	compareHeader(t, client, "Content-Type", "application/json")
+	compareHeader(t, client, "Accept", "application/json")
+	validateHeaderPresent(t, client, "CB-ACCESS-SIGN")
+	validateHeaderPresent(t, client, "CB-ACCESS-TIMESTAMP")
+}
+
+func compareHeader(t *testing.T, c *Client, wantHeader string, wantContent string) {
+	if c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader) != wantContent {
+		t.Errorf(
+			"%s header should be %s, was '%s'\n",
+			wantHeader,
+			wantContent,
+			c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader),
+		)
+	}
+}
+
+func validateHeaderPresent(t *testing.T, c *Client, wantHeader string) {
+	if c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader) == "" {
+		t.Errorf("%s header should not be empty\n", wantHeader)
+	}
+}
+
 func TestClient_ListAccounts(t *testing.T) {
-	type fields struct {
-		baseRestURL string
-		baseWsURL   string
-		key         string
-		secret      string
-		passphrase  string
-		httpClient  *http.Client
-	}
-	defaultFields := func() fields {
-		return fields{
-			baseRestURL: baseRestURL,
-			baseWsURL:   baseWsURL,
-			key:         key,
-			secret:      secret,
-			passphrase:  passphrase,
-		}
-	}
 	tests := []struct {
 		name    string
 		fields  fields
@@ -141,23 +170,6 @@ func TestClient_ListAccounts(t *testing.T) {
 }
 
 func TestClient_GetAccount(t *testing.T) {
-	type fields struct {
-		baseRestURL string
-		baseWsURL   string
-		key         string
-		secret      string
-		passphrase  string
-		httpClient  *http.Client
-	}
-	defaultFields := func() fields {
-		return fields{
-			baseRestURL: baseRestURL,
-			baseWsURL:   baseWsURL,
-			key:         key,
-			secret:      secret,
-			passphrase:  passphrase,
-		}
-	}
 	type args struct {
 		accountID string
 	}
@@ -229,23 +241,6 @@ func TestClient_GetAccount(t *testing.T) {
 }
 
 func TestClient_GetAccountHistory(t *testing.T) {
-	type fields struct {
-		baseRestURL string
-		baseWsURL   string
-		key         string
-		secret      string
-		passphrase  string
-		httpClient  *http.Client
-	}
-	defaultFields := func() fields {
-		return fields{
-			baseRestURL: baseRestURL,
-			baseWsURL:   baseWsURL,
-			key:         key,
-			secret:      secret,
-			passphrase:  passphrase,
-		}
-	}
 	type args struct {
 		accountID string
 	}
@@ -378,23 +373,6 @@ func TestClient_GetAccountHistory(t *testing.T) {
 }
 
 func TestClient_GetAccountHolds(t *testing.T) {
-	type fields struct {
-		baseRestURL string
-		baseWsURL   string
-		key         string
-		secret      string
-		passphrase  string
-		httpClient  *http.Client
-	}
-	defaultFields := func() fields {
-		return fields{
-			baseRestURL: baseRestURL,
-			baseWsURL:   baseWsURL,
-			key:         key,
-			secret:      secret,
-			passphrase:  passphrase,
-		}
-	}
 	type args struct {
 		accountID string
 	}
@@ -509,27 +487,95 @@ func TestClient_GetAccountHolds(t *testing.T) {
 	}
 }
 
-func validateHeaders(t *testing.T, client *Client) {
-	compareHeader(t, client, "CB-ACCESS-KEY", key)
-	compareHeader(t, client, "CB-ACCESS-PASSPHRASE", passphrase)
-	compareHeader(t, client, "User-Agent", userAgent)
-	validateHeaderPresent(t, client, "CB-ACCESS-SIGN")
-	validateHeaderPresent(t, client, "CB-ACCESS-TIMESTAMP")
-}
-
-func compareHeader(t *testing.T, c *Client, wantHeader string, wantContent string) {
-	if c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader) != wantContent {
-		t.Errorf(
-			"%s header should be %s, was '%s'\n",
-			wantHeader,
-			wantContent,
-			c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader),
-		)
+func TestClient_PlaceOrder(t *testing.T) {
+	type args struct {
+		order OrderParams
 	}
-}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    Order
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful market order is made with PlaceOrder",
+			fields: defaultFields(),
+			args: args{order: OrderParams{
+				CommonOrderParams: CommonOrderParams{
+					Side:      "buy",
+					ProductID: "ETH-BTC",
+					ClientOID: "0f5d8030-8908-4ef5-b3e8-7131bbe35588",
+					Type:      "market",
+					Size:      "0.15",
+				},
+			}},
+			want: Order{
+				ID:            "918e9893-ecb1-4a51-8b7b-3f29f9baff9f",
+				CreatedAt:     "2020-07-02T19:03:55.864229Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "ETH-BTC",
+						Type:      "market",
+						Price:     "",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "49.20762366",
+					},
+				},
+			},
+			wantRaw: `{
+				"id": "918e9893-ecb1-4a51-8b7b-3f29f9baff9f",
+				"size": "0.15",
+				"product_id": "ETH-BTC",
+				"side": "buy",
+				"stp": "cn",
+				"funds": "49.20762366",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2020-07-02T19:03:55.864229Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled": false
+			}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
 
-func validateHeaderPresent(t *testing.T, c *Client, wantHeader string) {
-	if c.httpClient.(*MockClient).Requests[0].Header.Get(wantHeader) == "" {
-		t.Errorf("%s header should not be empty\n", wantHeader)
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.PlaceOrder(tt.args.order)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.PlaceOrder() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.PlaceOrder() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
