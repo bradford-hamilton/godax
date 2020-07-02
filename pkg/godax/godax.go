@@ -1,6 +1,7 @@
 package godax
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -94,6 +95,15 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	}
 
 	return c.getAccountHolds(accountID, timestamp, method, path, sig)
+}
+
+// PlaceOrder allows you to place two types of orders: limit and market. Orders can only be
+// placed if your account has sufficient funds. Once an order is placed, your account funds
+// will be put on hold for the duration of the order. How much and which funds are put on
+// hold depends on the order type and parameters specified. This endpoint requires the
+// "trade" permission.
+func (c *Client) PlaceOrder(params Order) (Order, error) {
+	return Order{}, errors.New("TODO")
 }
 
 func unixTime() string {
