@@ -35,7 +35,7 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 	method := http.MethodGet
 	path := "/accounts"
 
-	sig, err := c.generateSignature(timestamp, method, path, "")
+	sig, err := c.generateSig(timestamp, method, path, "")
 	if err != nil {
 		return []ListAccount{}, err
 	}
@@ -51,7 +51,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID
 
-	sig, err := c.generateSignature(timestamp, method, path, "")
+	sig, err := c.generateSig(timestamp, method, path, "")
 	if err != nil {
 		return Account{}, err
 	}
@@ -69,7 +69,7 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
 
-	sig, err := c.generateSignature(timestamp, method, path, "")
+	sig, err := c.generateSig(timestamp, method, path, "")
 	if err != nil {
 		return []AccountActivity{}, err
 	}
@@ -88,7 +88,7 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/holds"
 
-	sig, err := c.generateSignature(timestamp, method, path, "")
+	sig, err := c.generateSig(timestamp, method, path, "")
 	if err != nil {
 		return []AccountHold{}, err
 	}

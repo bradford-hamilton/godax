@@ -46,7 +46,7 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 	req.Header.Set("User-Agent", userAgent)
 }
 
-// generateSignature generates the signature for the CB-ACCESS-SIGN header.
+// generateSig generates the signature for the CB-ACCESS-SIGN header.
 // 1. base64 decode the client coinbase pro secret
 // 2. create a sha256 HMAC using the base64 decoded secret
 // 3. concatenate (timestamp + http method + coinbase pro URL path + message body), and get the bytes
@@ -54,7 +54,7 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 //   - message body can be omitted (typically for GET requests)
 // 4. write the result to the hash and sum it
 // 5. base64 encoded the digest
-func (c *Client) generateSignature(timestamp, method, path, body string) (string, error) {
+func (c *Client) generateSig(timestamp, method, path, body string) (string, error) {
 	secret, err := base64.StdEncoding.DecodeString(c.secret)
 	if err != nil {
 		return "", err
