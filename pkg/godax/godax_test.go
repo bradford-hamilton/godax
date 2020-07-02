@@ -524,7 +524,6 @@ func TestClient_PlaceOrder(t *testing.T) {
 						Side:      "buy",
 						ProductID: "ETH-BTC",
 						Type:      "market",
-						Price:     "",
 						Size:      "0.15",
 						Stp:       "cn",
 					},
@@ -551,6 +550,59 @@ func TestClient_PlaceOrder(t *testing.T) {
 				"executed_value": "0",
 				"status": "pending",
 				"settled": false
+			}`,
+		},
+		{
+			name:   "when a successful limit order is made with PlaceOrder",
+			fields: defaultFields(),
+			args: args{order: OrderParams{
+				CommonOrderParams: CommonOrderParams{
+					Side:      "buy",
+					ProductID: "ETH-BTC",
+					Type:      "limit",
+					Size:      "0.15",
+					Price:     "1",
+				},
+			}},
+			want: Order{
+				ID:            "5033b47c-bb58-4089-b062-b830fc93c207",
+				CreatedAt:     "2020-07-02T20:57:22.077332Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "ETH-BTC",
+						Type:      "limit",
+						Price:     "1",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly:    false,
+						TimeInForce: "GTC",
+					},
+				},
+			},
+			wantRaw: `{
+				"id": "5033b47c-bb58-4089-b062-b830fc93c207",
+				"price": "1",
+				"size": "0.15",
+				"product_id": "ETH-BTC",
+				"side": "buy",
+				"stp": "cn",
+				"type": "limit",
+				"time_in_force": "GTC",
+				"post_only": false,
+				"created_at": "2020-07-02T20:57:22.077332Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled":false
 			}`,
 		},
 	}
