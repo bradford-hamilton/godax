@@ -838,3 +838,263 @@ func TestClient_CancelAllOrders(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_ListOrders(t *testing.T) {
+	productID := "BTC-USD"
+	status := "pending"
+
+	type args struct {
+		status    *string
+		productID *string
+	}
+	tests := [...]struct {
+		name    string
+		fields  fields
+		args    args
+		want    []Order
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful list orders call has been made with no product ID",
+			fields: defaultFields(),
+			args:   args{status: nil, productID: nil},
+			want: []Order{{
+				ID:            "b5bebfc6-4ee1-463c-8a57-7aa98eeb3f7e",
+				CreatedAt:     "2020-07-02T19:03:55.864229Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "ETH-BTC",
+						Type:      "market",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "49.20762366",
+					},
+				},
+			}},
+			wantRaw: `[{
+				"id": "b5bebfc6-4ee1-463c-8a57-7aa98eeb3f7e",
+				"size": "0.15",
+				"product_id": "ETH-BTC",
+				"side": "buy",
+				"stp": "cn",
+				"funds": "49.20762366",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2020-07-02T19:03:55.864229Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled": false
+			}]`,
+		},
+		{
+			name:   "when a successful list orders call has been made with a product ID",
+			fields: defaultFields(),
+			args:   args{productID: &productID},
+			want: []Order{{
+				ID:            "5b598eca-27cd-4ffc-bc17-8d5eaae67541",
+				CreatedAt:     "2020-07-02T19:03:55.864229Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "BTC-LTC",
+						Type:      "market",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "49.20762366",
+					},
+				},
+			}, {
+				ID:            "fe82e31d-105b-4a1d-847c-d43e280d5966",
+				CreatedAt:     "2020-07-02T19:03:55.864229Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "BTC-LTC",
+						Type:      "market",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "49.20762366",
+					},
+				},
+			}},
+			wantRaw: `[{
+				"id": "5b598eca-27cd-4ffc-bc17-8d5eaae67541",
+				"size": "0.15",
+				"product_id": "BTC-LTC",
+				"side": "buy",
+				"stp": "cn",
+				"funds": "49.20762366",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2020-07-02T19:03:55.864229Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled": false
+			},{
+				"id": "fe82e31d-105b-4a1d-847c-d43e280d5966",
+				"size": "0.15",
+				"product_id": "BTC-LTC",
+				"side": "buy",
+				"stp": "cn",
+				"funds": "49.20762366",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2020-07-02T19:03:55.864229Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled": false
+			}]`,
+		},
+		{
+			name:   "when a successful list orders call has been made with a status filter",
+			fields: defaultFields(),
+			args:   args{status: &status},
+			want: []Order{{
+				ID:            "2a795d2e-f77a-4ac6-8998-767fe36fbaed",
+				CreatedAt:     "2020-07-02T19:03:55.864229Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "BTC-XTZ",
+						Type:      "market",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "49.20762366",
+					},
+				},
+			}, {
+				ID:            "5e8333a9-c86a-4877-b0ac-9b35769f74af",
+				CreatedAt:     "2020-07-02T19:03:55.864229Z",
+				FillFees:      "0",
+				FilledSize:    "0",
+				ExecutedValue: "0",
+				Status:        "pending",
+				Settled:       false,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "BTC-XTZ",
+						Type:      "market",
+						Size:      "0.15",
+						Stp:       "cn",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "49.20762366",
+					},
+				},
+			}},
+			wantRaw: `[{
+				"id": "2a795d2e-f77a-4ac6-8998-767fe36fbaed",
+				"size": "0.15",
+				"product_id": "BTC-XTZ",
+				"side": "buy",
+				"stp": "cn",
+				"funds": "49.20762366",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2020-07-02T19:03:55.864229Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled": false
+			},{
+				"id": "5e8333a9-c86a-4877-b0ac-9b35769f74af",
+				"size": "0.15",
+				"product_id": "BTC-XTZ",
+				"side": "buy",
+				"stp": "cn",
+				"funds": "49.20762366",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2020-07-02T19:03:55.864229Z",
+				"fill_fees": "0",
+				"filled_size": "0",
+				"executed_value": "0",
+				"status": "pending",
+				"settled": false
+			}]`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.ListOrders(tt.args.status, tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.ListOrders() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.ListOrders() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

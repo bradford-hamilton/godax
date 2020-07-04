@@ -185,3 +185,32 @@ func (c *Client) CancelAllOrders(productID *string) (canceledOrderIDs []string, 
 
 	return c.cancelAllOrders(timestamp, method, path, sig)
 }
+
+// ListOrders lists your current open orders from the profile that the API key belongs to. Only open or un-settled
+// orders are returned. As soon as an order is no longer open and settled, it will no longer appear in the default
+// request. This endpoint requires either the "view" or "trade" permission. Valid status args to filter by: [open, pending, active].
+func (c *Client) ListOrders(status, productID *string) ([]Order, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/orders"
+
+	// TODO: come back to this with a better solution for query params.
+	// TODO: To specify multiple statuses, use the status query argument multiple times: /orders?status=done&status=pending
+	if status != nil {
+		qp := "?status=" + *status
+		if productID != nil {
+			path += qp + "&product_id=" + *productID
+		} else {
+			path += qp
+		}
+	} else if productID != nil {
+		path += "?status=all&product_id=" + *productID
+	}
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return c.listOrders(timestamp, method, path, sig)
+}
