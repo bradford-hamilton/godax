@@ -61,7 +61,7 @@ func validateHeaderPresent(t *testing.T, c *Client, wantHeader string) {
 }
 
 func TestClient_ListAccounts(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		mock    HTTPClient
@@ -173,7 +173,7 @@ func TestClient_GetAccount(t *testing.T) {
 	type args struct {
 		accountID string
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -244,7 +244,7 @@ func TestClient_GetAccountHistory(t *testing.T) {
 	type args struct {
 		accountID string
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -376,7 +376,7 @@ func TestClient_GetAccountHolds(t *testing.T) {
 	type args struct {
 		accountID string
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -491,7 +491,7 @@ func TestClient_PlaceOrder(t *testing.T) {
 	type args struct {
 		order OrderParams
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -625,8 +625,215 @@ func TestClient_PlaceOrder(t *testing.T) {
 				return
 			}
 
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.PlaceOrder() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_CancelOrderByID(t *testing.T) {
+	productID := "BTC-USD"
+
+	type args struct {
+		orderID   string
+		productID *string
+	}
+	tests := [...]struct {
+		name                string
+		fields              fields
+		args                args
+		wantCanceledOrderID string
+		wantRaw             string
+		wantErr             bool
+	}{
+		{
+			name:                "when a successful cancel order has been made with no product ID",
+			fields:              defaultFields(),
+			args:                args{orderID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3", productID: nil},
+			wantCanceledOrderID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3",
+			wantRaw:             "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3",
+		},
+		{
+			name:                "when a successful cancel order has been made with a product ID",
+			fields:              defaultFields(),
+			args:                args{orderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8", productID: &productID},
+			wantCanceledOrderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8",
+			wantRaw:             "4f92c553-7c71-4b3a-8878-f415e6a2f0d8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			gotCanceledOrderID, err := c.CancelOrderByID(tt.args.orderID, tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.CancelOrderByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if gotCanceledOrderID != tt.wantCanceledOrderID {
+				t.Errorf("Client.CancelOrderByID() = %v, want %v", gotCanceledOrderID, tt.wantCanceledOrderID)
+			}
+		})
+	}
+}
+
+func TestClient_CancelOrderByClientOID(t *testing.T) {
+	productID := "BTC-USD"
+
+	type args struct {
+		clientOID string
+		productID *string
+	}
+	tests := [...]struct {
+		name                string
+		fields              fields
+		args                args
+		wantCanceledOrderID string
+		wantRaw             string
+		wantErr             bool
+	}{
+		{
+			name:                "when a successful cancel order has been made with no product ID",
+			fields:              defaultFields(),
+			args:                args{clientOID: "408290f2-f13e-465d-a2ff-98a29d130bd4", productID: nil},
+			wantCanceledOrderID: "408290f2-f13e-465d-a2ff-98a29d130bd4",
+			wantRaw:             "408290f2-f13e-465d-a2ff-98a29d130bd4",
+		},
+		{
+			name:                "when a successful cancel order has been made with a product ID",
+			fields:              defaultFields(),
+			args:                args{clientOID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8", productID: &productID},
+			wantCanceledOrderID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8",
+			wantRaw:             "52e06257-dc1f-4e82-b115-c81f5f07a9d8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			gotCanceledOrderID, err := c.CancelOrderByClientOID(tt.args.clientOID, tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.CancelOrderByClientOID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if gotCanceledOrderID != tt.wantCanceledOrderID {
+				t.Errorf("Client.CancelOrderByClientOID() = %v, want %v", gotCanceledOrderID, tt.wantCanceledOrderID)
+			}
+		})
+	}
+}
+
+func TestClient_CancelAllOrders(t *testing.T) {
+	productID := "BTC-USD"
+
+	type args struct {
+		productID *string
+	}
+	tests := [...]struct {
+		name                 string
+		fields               fields
+		args                 args
+		wantCanceledOrderIDs []string
+		wantRaw              string
+		wantErr              bool
+	}{
+		{
+			name:   "when a successful cancel all orders call has been made with no product ID",
+			fields: defaultFields(),
+			args:   args{productID: nil},
+			wantCanceledOrderIDs: []string{
+				"920dfecf-2dde-491d-9dd1-ca9f335a0663",
+				"0189696d-7b3e-4e9d-aa27-5df9f620466f",
+				"91315780-ced8-43a7-856d-52d5daf9d574",
+			},
+			wantRaw: `[
+				"920dfecf-2dde-491d-9dd1-ca9f335a0663",
+				"0189696d-7b3e-4e9d-aa27-5df9f620466f",
+				"91315780-ced8-43a7-856d-52d5daf9d574"
+			]`,
+		},
+		{
+			name:   "when a successful cancel all orders call has been made with a product ID",
+			fields: defaultFields(),
+			args:   args{productID: &productID},
+			wantCanceledOrderIDs: []string{
+				"db5b5cb9-3a86-4d44-b62d-c2c2c39d1446",
+				"7fc4a8bf-e22b-46f2-a881-5bedd2bc1571",
+				"85495e53-1e07-4ae0-b6e6-205bbf1b0552",
+			},
+			wantRaw: `[
+				"db5b5cb9-3a86-4d44-b62d-c2c2c39d1446",
+				"7fc4a8bf-e22b-46f2-a881-5bedd2bc1571",
+				"85495e53-1e07-4ae0-b6e6-205bbf1b0552"
+			]`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			gotCanceledOrderIDs, err := c.CancelAllOrders(tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.CancelAllOrders() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(gotCanceledOrderIDs, tt.wantCanceledOrderIDs) {
+				t.Errorf("Client.CancelAllOrders() = %v, want %v", gotCanceledOrderIDs, tt.wantCanceledOrderIDs)
 			}
 		})
 	}

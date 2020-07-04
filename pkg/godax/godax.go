@@ -1,11 +1,10 @@
 package godax
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
-
-	"go-review.googlesource.com/go/src/encoding/json"
 )
 
 // Client is the main export of godax. All its fields are unexported.
@@ -123,4 +122,66 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 
 func unixTime() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
+}
+
+// CancelOrderByID cancels a previously placed order. Order must belong to the profile that
+// the API key belongs to. If the order had no matches during its lifetime its record may be
+// purged. This means the order details will not be available with GetOrderByID or GetOrderByClientOID.
+// The product ID of the order is not required so if you don't have it you can pass nil here.
+// The request will be more performant if you include it. This endpoint requires the "trade" permission.
+func (c *Client) CancelOrderByID(orderID string, productID *string) (canceledOrderID string, err error) {
+	timestamp := unixTime()
+	method := http.MethodDelete
+	path := "/orders/" + orderID
+	if productID != nil {
+		path += "?product_id=" + *productID
+	}
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return "", err
+	}
+
+	return c.cancelOrder(timestamp, method, path, sig)
+}
+
+// CancelOrderByClientOID cancels a previously placed order. Order must belong to the profile that
+// the API key belongs to. If the order had no matches during its lifetime its record may be
+// purged. This means the order details will not be available with GetOrderByID or GetOrderByClientOID.
+// The product ID of the order is not required so if you don't have it you can pass nil here.
+// The request will be more performant if you include it. This endpoint requires the "trade" permission.
+func (c *Client) CancelOrderByClientOID(clientOID string, productID *string) (canceledOrderID string, err error) {
+	timestamp := unixTime()
+	method := http.MethodDelete
+	path := "/orders/client:" + clientOID
+	if productID != nil {
+		path += "?product_id=" + *productID
+	}
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return "", err
+	}
+
+	return c.cancelOrder(timestamp, method, path, sig)
+}
+
+// CancelAllOrders cancel all open orders from the profile that the API key belongs to. The response is
+// a list of ids of the canceled orders. This endpoint requires the "trade" permission. The productID
+// param is opitonal and a pointer, so you can pass nil. If you do provide the productID here, you will
+// only cancel orders open for that specific product.
+func (c *Client) CancelAllOrders(productID *string) (canceledOrderIDs []string, err error) {
+	timestamp := unixTime()
+	method := http.MethodDelete
+	path := "/orders"
+	if productID != nil {
+		path += "?product_id=" + *productID
+	}
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return nil, err
+	}
+
+	return c.cancelAllOrders(timestamp, method, path, sig)
 }

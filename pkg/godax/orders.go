@@ -1,10 +1,10 @@
 package godax
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-
-	"gopkg.in/square/go-jose.v2/json"
 )
 
 // Order represents a trading account for a coinbase pro profile.
@@ -122,7 +122,7 @@ type MarketOrderParams struct {
 	Funds string `json:"funds,omitempty"`
 }
 
-// placeOrder ...
+// placeOrder allows you to place two types of orders: limit and market
 func (c *Client) placeOrder(timestamp, method, path, signature string, body []byte) (Order, error) {
 	res, err := c.do(timestamp, method, path, signature, body)
 	if err != nil {
@@ -131,7 +131,7 @@ func (c *Client) placeOrder(timestamp, method, path, signature string, body []by
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return orderError(res)
+		return Order{}, orderError(res)
 	}
 
 	var order Order
@@ -142,8 +142,49 @@ func (c *Client) placeOrder(timestamp, method, path, signature string, body []by
 	return order, nil
 }
 
-func orderError(res *http.Response) (Order, error) {
+func (c *Client) cancelOrder(timestamp, method, path, signature string) (string, error) {
+	res, err := c.do(timestamp, method, path, signature, nil)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return "", orderError(res)
+	}
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	orderID := string(b)
+
+	return orderID, nil
+}
+
+func (c *Client) cancelAllOrders(timestamp, method, path, signature string) ([]string, error) {
+	res, err := c.do(timestamp, method, path, signature, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, orderError(res)
+	}
+
+	var orderIDs []string
+	if err := json.NewDecoder(res.Body).Decode(&orderIDs); err != nil {
+		return nil, err
+	}
+
+	return orderIDs, nil
+}
+
+func orderError(res *http.Response) error {
 	var err CoinbaseErrRes
-	json.NewDecoder(res.Body).Decode(&err)
-	return Order{}, fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
+	if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
+		return err
+	}
+	return fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
 }
