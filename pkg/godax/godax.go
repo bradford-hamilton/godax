@@ -28,6 +28,10 @@ func NewSandboxClient() (*Client, error) {
 	return newClient(true)
 }
 
+func unixTime() string {
+	return strconv.FormatInt(time.Now().Unix(), 10)
+}
+
 // ListAccounts gets a list of trading accounts from the profile associated with the API key.
 // This endpoint requires either the "view" or "trade" permission. This endpoint has a custom
 // rate limit by profile ID: 25 requests per second, up to 50 requests per second in bursts
@@ -120,10 +124,6 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 	return c.placeOrder(timestamp, method, path, sig, body)
 }
 
-func unixTime() string {
-	return strconv.FormatInt(time.Now().Unix(), 10)
-}
-
 // CancelOrderByID cancels a previously placed order. Order must belong to the profile that
 // the API key belongs to. If the order had no matches during its lifetime its record may be
 // purged. This means the order details will not be available with GetOrderByID or GetOrderByClientOID.
@@ -188,7 +188,18 @@ func (c *Client) CancelAllOrders(productID *string) (canceledOrderIDs []string, 
 
 // ListOrders lists your current open orders from the profile that the API key belongs to. Only open or un-settled
 // orders are returned. As soon as an order is no longer open and settled, it will no longer appear in the default
-// request. This endpoint requires either the "view" or "trade" permission. Valid status args to filter by: [open, pending, active].
+// request. This endpoint requires either the "view" or "trade" permission.
+// Valid status args to filter return orders: [open, pending, active].
+//
+// Orders which are no longer resting on the order book, will be marked with the done status. There is a small window
+// between an order being done and settled. An order is settled when all of the fills have settled and the remaining
+// holds (if any) have been removed.
+//
+// For high-volume trading it is strongly recommended that you maintain your own list
+// of open orders and use one of the streaming market data feeds to keep it updated. You should poll the open orders
+// endpoint once when you start trading to obtain the current state of any open orders. executed_value is the cumulative
+// match size * price and is only present for orders placed after 2016-05-20. Open orders may change state between the
+// request and the response depending on market conditions.
 func (c *Client) ListOrders(status, productID *string) ([]Order, error) {
 	timestamp := unixTime()
 	method := http.MethodGet
@@ -213,4 +224,38 @@ func (c *Client) ListOrders(status, productID *string) ([]Order, error) {
 	}
 
 	return c.listOrders(timestamp, method, path, sig)
+}
+
+// GetOrderByID gets an order by its ID. This endpoint requires either the "view" or "trade" permission.
+// Orders may be queried using either the exchange assigned id or the client assigned client_oid.
+// If the order is canceled the response may have status code 404 if the order had no matches. Note:
+// Open orders may change state between the request and the response depending on market conditions.
+func (c *Client) GetOrderByID(orderID string) (Order, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/orders/" + orderID
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return Order{}, err
+	}
+
+	return c.getOrder(timestamp, method, path, sig)
+}
+
+// GetOrderByClientOID gets an order by its client OID. This endpoint requires either the "view" or "trade"
+// permission. Orders may be queried using either the exchange assigned id or the client assigned client_oid.
+// If the order is canceled the response may have status code 404 if the order had no matches. Note: Open orders
+// may change state between the request and the response depending on market conditions.
+func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/orders/client:" + orderClientOID
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return Order{}, err
+	}
+
+	return c.getOrder(timestamp, method, path, sig)
 }

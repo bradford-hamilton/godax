@@ -1098,3 +1098,189 @@ func TestClient_ListOrders(t *testing.T) {
 		})
 	}
 }
+
+func TestClient_GetOrderByID(t *testing.T) {
+	type args struct {
+		orderID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    Order
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful call is made to GetOrderByID an Order is returned",
+			fields: defaultFields(),
+			args:   args{orderID: "68e6a28f-ae28-4788-8d4f-5ab4e5e5ae08"},
+			want: Order{
+				ID:            "68e6a28f-ae28-4788-8d4f-5ab4e5e5ae08",
+				CreatedAt:     "2016-12-08T20:09:05.508883Z",
+				FillFees:      "0.0249376391550000",
+				FilledSize:    "0.01291771",
+				ExecutedValue: "9.9750556620000000",
+				Status:        "done",
+				Settled:       true,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "BTC-USD",
+						Type:      "market",
+						Size:      "1.00000000",
+						Stp:       "dc",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "9.9750623400000000",
+					},
+				},
+			},
+			wantRaw: `{
+				"id": "68e6a28f-ae28-4788-8d4f-5ab4e5e5ae08",
+				"size": "1.00000000",
+				"product_id": "BTC-USD",
+				"side": "buy",
+				"stp": "dc",
+				"funds": "9.9750623400000000",
+				"specified_funds": "10.0000000000000000",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2016-12-08T20:09:05.508883Z",
+				"done_at": "2016-12-08T20:09:05.527Z",
+				"done_reason": "filled",
+				"fill_fees": "0.0249376391550000",
+				"filled_size": "0.01291771",
+				"executed_value": "9.9750556620000000",
+				"status": "done",
+				"settled": true
+			}`,
+		},
+	}
+	for _, tt := range tests {
+		mockClient := MockResponse(tt.wantRaw)
+
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetOrderByID(tt.args.orderID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetOrderByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetOrderByID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_GetOrderByClientOID(t *testing.T) {
+	type args struct {
+		orderClientOID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    Order
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful call is made to GetOrderByID an Order is returned",
+			fields: defaultFields(),
+			args:   args{orderClientOID: "3aaa5f6c-9ca2-4e5e-bca5-cebff877a170"},
+			want: Order{
+				ID:            "3aaa5f6c-9ca2-4e5e-bca5-cebff877a170",
+				CreatedAt:     "2016-12-08T20:09:05.508883Z",
+				FillFees:      "0.0249376391550000",
+				FilledSize:    "0.01291771",
+				ExecutedValue: "9.9750556620000000",
+				Status:        "done",
+				Settled:       true,
+				OrderParams: OrderParams{
+					CommonOrderParams: CommonOrderParams{
+						Side:      "buy",
+						ProductID: "BTC-USD",
+						Type:      "market",
+						Size:      "1.00000000",
+						Stp:       "dc",
+					},
+					LimitOrderParams: LimitOrderParams{
+						PostOnly: false,
+					},
+					MarketOrderParams: MarketOrderParams{
+						Funds: "9.9750623400000000",
+					},
+				},
+			},
+			wantRaw: `{
+				"id": "3aaa5f6c-9ca2-4e5e-bca5-cebff877a170",
+				"size": "1.00000000",
+				"product_id": "BTC-USD",
+				"side": "buy",
+				"stp": "dc",
+				"funds": "9.9750623400000000",
+				"specified_funds": "10.0000000000000000",
+				"type": "market",
+				"post_only": false,
+				"created_at": "2016-12-08T20:09:05.508883Z",
+				"done_at": "2016-12-08T20:09:05.527Z",
+				"done_reason": "filled",
+				"fill_fees": "0.0249376391550000",
+				"filled_size": "0.01291771",
+				"executed_value": "9.9750556620000000",
+				"status": "done",
+				"settled": true
+			}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetOrderByClientOID(tt.args.orderClientOID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetOrderByClientOID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetOrderByClientOID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

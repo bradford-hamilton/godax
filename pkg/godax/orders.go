@@ -196,6 +196,21 @@ func (c *Client) listOrders(timestamp, method, path, signature string) ([]Order,
 	return orders, nil
 }
 
+func (c *Client) getOrder(timestamp, method, path, signature string) (Order, error) {
+	res, err := c.do(timestamp, method, path, signature, nil)
+	if err != nil {
+		return Order{}, err
+	}
+	defer res.Body.Close()
+
+	var order Order
+	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
+		return Order{}, err
+	}
+
+	return order, nil
+}
+
 func orderError(res *http.Response) error {
 	var err CoinbaseErrRes
 	if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
