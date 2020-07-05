@@ -81,7 +81,7 @@ type CommonOrderParams struct {
 	// Not required for market orders.
 	Price string `json:"price"`
 
-	// indicates the amount of BTC (or base currency) to buy or sell. If you are placing a market order
+	// Size indicates the amount of BTC (or base currency) to buy or sell. If you are placing a market order
 	// this is optional, although you will need either Size OR Funds for a market order. This is required
 	// for a limit order. The size must be greater than the base_min_size for the product and no larger
 	// than the base_max_size. The size can be in incremented in units of base_increment.

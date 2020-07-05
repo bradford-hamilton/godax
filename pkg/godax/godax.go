@@ -2,6 +2,7 @@ package godax
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,6 +18,9 @@ type Client struct {
 	passphrase  string
 	httpClient  HTTPClient
 }
+
+// ErrMissingOrderOrProductID TODO: does this feel weird and one offy right now?
+var ErrMissingOrderOrProductID = errors.New("please provide either an orderID or productID")
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.
 func NewClient() (*Client, error) {
@@ -258,4 +262,36 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 	}
 
 	return c.getOrder(timestamp, method, path, sig)
+}
+
+// ListFills gets a list of recent fills of the API key's profile. This endpoint requires either the "view"
+// or "trade" permission. You can request fills for specific orders or products using the orderID and productID
+// parameters. You are required to provide either a product_id or order_id.
+//
+// Fees are recorded in two stages. Immediately after the matching engine completes a match, the fill
+// is inserted into our datastore. Once the fill is recorded, a settlement process will settle the fill and credit
+// both trading counterparties. The fee field indicates the fees charged for this individual fill.
+func (c *Client) ListFills(orderID, productID *string) ([]Fill, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/fills"
+
+	if orderID == nil && productID == nil {
+		return nil, ErrMissingOrderOrProductID
+	}
+	if orderID != nil {
+		path += "?order_id=" + *orderID
+		if productID != nil {
+			path += "&order_id=" + *productID
+		}
+	} else {
+		path += "?product_id=" + *productID
+	}
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return []Fill{}, err
+	}
+
+	return c.listFills(timestamp, method, path, sig)
 }
