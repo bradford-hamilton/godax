@@ -276,6 +276,8 @@ func (c *Client) ListFills(orderID, productID *string) ([]Fill, error) {
 	method := http.MethodGet
 	path := "/fills"
 
+	// TODO: another query param area to clean up. Thinking a struct could
+	// maybe be a better call? Look into this some.
 	if orderID == nil && productID == nil {
 		return nil, ErrMissingOrderOrProductID
 	}
