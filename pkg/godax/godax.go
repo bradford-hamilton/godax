@@ -279,7 +279,7 @@ func (c *Client) ListFills(orderID, productID *string) ([]Fill, error) {
 	// TODO: another query param area to clean up. Thinking a struct could
 	// maybe be a better call? Look into this some.
 	if orderID == nil && productID == nil {
-		return nil, ErrMissingOrderOrProductID
+		return []Fill{}, ErrMissingOrderOrProductID
 	}
 	if orderID != nil {
 		path += "?order_id=" + *orderID
@@ -296,4 +296,18 @@ func (c *Client) ListFills(orderID, productID *string) ([]Fill, error) {
 	}
 
 	return c.listFills(timestamp, method, path, sig)
+}
+
+// GetCurrentExchangeLimits will return information on your payment method transfer limits, as well as buy/sell limits per currency.
+func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/users/self/exchange-limits"
+
+	sig, err := c.generateSig(timestamp, method, path, "")
+	if err != nil {
+		return ExchangeLimit{}, err
+	}
+
+	return c.getLimits(timestamp, method, path, sig)
 }

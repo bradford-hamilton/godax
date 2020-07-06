@@ -118,6 +118,14 @@ func main() {
 	}
 
 	fmt.Printf("fills: %+v\n", fills)
+
+	limits, err := client.GetCurrentExchangeLimits()
+	if err != nil {
+		fmt.Printf("err getting exchange limits: %+v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("limits: %+v", limits)
 }
 
 func stringPtr(str string) *string {
