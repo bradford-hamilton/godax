@@ -69,7 +69,7 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 		return nil, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return []ListAccount{}, err
 	}
@@ -90,7 +90,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 		return Account{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return Account{}, err
 	}
@@ -113,7 +113,7 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 		return nil, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return []AccountActivity{}, err
 	}
@@ -137,7 +137,7 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 		return nil, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return []AccountHold{}, err
 	}
@@ -165,7 +165,7 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 		return Order{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), string(body))
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, string(body))
 	if err != nil {
 		return Order{}, err
 	}
@@ -189,7 +189,7 @@ func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderI
 	}
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return "", err
 	}
@@ -214,7 +214,7 @@ func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (cance
 
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return "", err
 	}
@@ -238,7 +238,7 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	// param multiple times: /orders?status=done&status=pending
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +318,7 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 		return Order{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return Order{}, err
 	}
@@ -349,7 +349,7 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.String(), "")
+	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
 	if err != nil {
 		return []Fill{}, err
 	}

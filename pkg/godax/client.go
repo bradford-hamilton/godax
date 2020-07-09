@@ -33,7 +33,8 @@ func newClient(sandbox bool) (*Client, error) {
 }
 
 func (c *Client) do(timestamp string, signature string, req *http.Request) (*http.Response, error) {
-	fmt.Println(req.URL.String())
+	fmt.Println(req.URL.Path)
+	c.setHeaders(req, timestamp, signature)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -54,7 +55,9 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 func (c *Client) setQueryParams(req *http.Request, qp QueryParams) {
 	q := req.URL.Query()
 	for k, v := range qp {
-		q.Add(string(k), v)
+		if v != "" {
+			q.Add(string(k), v)
+		}
 	}
 	req.URL.RawQuery = q.Encode()
 }
