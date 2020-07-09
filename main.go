@@ -48,7 +48,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	_, err = client.CancelOrderByID(o.ID, &o.ProductID)
+	_, err = client.CancelOrderByID(o.ID, godax.QueryParams{godax.ProductID: o.ProductID})
 	if err != nil {
 		fmt.Println("err canceling:", err)
 	}
@@ -91,7 +91,7 @@ func main() {
 		}
 	}
 
-	ords, err := client.ListOrders(nil, nil)
+	ords, err := client.ListOrders(godax.QueryParams{})
 	if err != nil {
 		fmt.Println("err listing orders: ", err)
 		os.Exit(1)
@@ -110,14 +110,14 @@ func main() {
 	// fmt.Printf("orderIDs: %+v", orderIDs)
 
 	// fmt.Printf("Orders should be empty now: %+v\n", ords)
-
-	fills, err := client.ListFills(&o.ID, nil)
+	qp := godax.QueryParams{"order_id": o.ID}
+	fills, err := client.ListFills(qp)
 	if err != nil {
 		fmt.Printf("err getting fills: %+v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("fills: %+v\n", fills)
+	fmt.Printf("fills HERE IS WHAT I CARE ABOUT: %+v\n", fills)
 
 	limits, err := client.GetCurrentExchangeLimits()
 	if err != nil {

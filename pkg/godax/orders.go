@@ -123,8 +123,8 @@ type MarketOrderParams struct {
 }
 
 // placeOrder allows you to place two types of orders: limit and market
-func (c *Client) placeOrder(timestamp, method, path, signature string, body []byte) (Order, error) {
-	res, err := c.do(timestamp, method, path, signature, body)
+func (c *Client) placeOrder(timestamp, signature string, req *http.Request, body []byte) (Order, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return Order{}, err
 	}
@@ -142,8 +142,8 @@ func (c *Client) placeOrder(timestamp, method, path, signature string, body []by
 	return order, nil
 }
 
-func (c *Client) cancelOrder(timestamp, method, path, signature string) (string, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) cancelOrder(timestamp, signature string, req *http.Request) (string, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return "", err
 	}
@@ -162,8 +162,8 @@ func (c *Client) cancelOrder(timestamp, method, path, signature string) (string,
 	return orderID, nil
 }
 
-func (c *Client) cancelAllOrders(timestamp, method, path, signature string) ([]string, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) cancelAllOrders(timestamp, signature string, req *http.Request) ([]string, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return nil, err
 	}
@@ -181,8 +181,8 @@ func (c *Client) cancelAllOrders(timestamp, method, path, signature string) ([]s
 	return orderIDs, nil
 }
 
-func (c *Client) listOrders(timestamp, method, path, signature string) ([]Order, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) listOrders(timestamp, signature string, req *http.Request) ([]Order, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return nil, err
 	}
@@ -196,8 +196,8 @@ func (c *Client) listOrders(timestamp, method, path, signature string) ([]Order,
 	return orders, nil
 }
 
-func (c *Client) getOrder(timestamp, method, path, signature string) (Order, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) getOrder(timestamp, signature string, req *http.Request) (Order, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return Order{}, err
 	}

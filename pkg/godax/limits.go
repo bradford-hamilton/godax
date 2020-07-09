@@ -2,6 +2,7 @@ package godax
 
 import (
 	"encoding/json"
+	"net/http"
 )
 
 // ExchangeLimit represents info about your payment method transfer limits, as well as buy/sell limits per currency.
@@ -70,8 +71,8 @@ type Limit struct {
 }
 
 // getLimits retrieves information for a single account.
-func (c *Client) getLimits(timestamp, method, path, signature string) (ExchangeLimit, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) getLimits(timestamp, signature string, req *http.Request) (ExchangeLimit, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return ExchangeLimit{}, err
 	}

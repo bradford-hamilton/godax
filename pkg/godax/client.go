@@ -1,10 +1,10 @@
 package godax
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -32,12 +32,8 @@ func newClient(sandbox bool) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) do(timestamp, method, path, signature string, body []byte) (*http.Response, error) {
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-	c.setHeaders(req, timestamp, signature)
+func (c *Client) do(timestamp string, signature string, req *http.Request) (*http.Response, error) {
+	fmt.Println(req.URL.String())
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -53,6 +49,14 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
+}
+
+func (c *Client) setQueryParams(req *http.Request, qp QueryParams) {
+	q := req.URL.Query()
+	for k, v := range qp {
+		q.Add(string(k), v)
+	}
+	req.URL.RawQuery = q.Encode()
 }
 
 // generateSig generates the signature for the CB-ACCESS-SIGN header.

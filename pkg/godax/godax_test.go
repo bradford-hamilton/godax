@@ -1289,10 +1289,7 @@ func TestClient_ListFills(t *testing.T) {
 	orderID := "d50ec984-77a8-460a-b958-66f114b0de9b"
 	productID := "BTC-USD"
 
-	type args struct {
-		orderID   *string
-		productID *string
-	}
+	type args struct{ qp QueryParams }
 	tests := []struct {
 		name    string
 		fields  fields
@@ -1304,7 +1301,7 @@ func TestClient_ListFills(t *testing.T) {
 		{
 			name:   "when a successful call is made to list fills it returns a slice of fills",
 			fields: defaultFields(),
-			args:   args{orderID: &orderID, productID: &productID},
+			args:   args{qp: QueryParams{OrderID: orderID, ProductID: productID}},
 			want: []Fill{{
 				TradeID:   74,
 				ProductID: "BTC-USD",
@@ -1333,7 +1330,7 @@ func TestClient_ListFills(t *testing.T) {
 		{
 			name:    "when neither an orderID or productID is provided by the caller, it should return an error",
 			fields:  defaultFields(),
-			args:    args{orderID: nil, productID: nil},
+			args:    args{qp: QueryParams{}},
 			want:    []Fill{},
 			wantErr: true,
 			wantRaw: `[]`,
@@ -1352,7 +1349,8 @@ func TestClient_ListFills(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			got, err := c.ListFills(tt.args.orderID, tt.args.productID)
+			qp := QueryParams{OrderID: tt.args.qp[OrderID], ProductID: tt.args.qp[ProductID]}
+			got, err := c.ListFills(qp)
 			if err != nil {
 				if tt.wantErr && err == ErrMissingOrderOrProductID {
 					return
