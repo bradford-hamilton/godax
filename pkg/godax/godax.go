@@ -35,11 +35,6 @@ var noBody = []byte{}
 // QueryParams represent the available query params for any given coinbase pro call.
 type QueryParams map[Param]string
 
-// StringPtr is a simple helper for getting pointers to your strings.
-func StringPtr(str string) *string {
-	return &str
-}
-
 // ErrMissingOrderOrProductID TODO: does this feel weird and one offy right now?
 var ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
 
