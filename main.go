@@ -7,6 +7,10 @@ import (
 	"github.com/bradford-hamilton/godax/pkg/godax"
 )
 
+// NOTE:
+// This is a dumping ground for testing godax until it's more complete.
+// Godax lives at "github.com/bradford-hamilton/godax/pkg/godax"
+
 func main() {
 	client, err := godax.NewSandboxClient()
 	if err != nil {

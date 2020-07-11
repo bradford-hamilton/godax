@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="coinbase_pro_logo.png" alt="coinbase pro logo" height="200" width="200" />
-  <h1 align="center">godax</h1>
+  <img src="coinbase_pro_logo.png" alt="coinbase pro logo" height="250" width="250" />
+  <h1 align="center">Godax</h1>
   <a href="https://goreportcard.com/report/github.com/bradford-hamilton/godax">
     <img src="https://goreportcard.com/badge/github.com/bradford-hamilton/godax" alt="coinbase pro logo" align="center" />
   </a>
@@ -20,8 +20,7 @@
 <br />
 <br />
 
-# godax
-## coinbase pro client
+## godax is a coinbase pro client
 
 This is currently a WIP.
 
