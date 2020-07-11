@@ -157,10 +157,6 @@ func (c *Client) listAccounts(timestamp, signature string, req *http.Request) ([
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, coinbaseError(res)
-	}
-
 	var accounts []ListAccount
 	if err := json.NewDecoder(res.Body).Decode(&accounts); err != nil {
 		return []ListAccount{}, err
@@ -175,10 +171,6 @@ func (c *Client) getAccount(timestamp, signature string, req *http.Request) (Acc
 		return Account{}, err
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return Account{}, coinbaseError(res)
-	}
 
 	var account Account
 	if err := json.NewDecoder(res.Body).Decode(&account); err != nil {
@@ -195,10 +187,6 @@ func (c *Client) getAccountHistory(timestamp, signature string, req *http.Reques
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, coinbaseError(res)
-	}
-
 	var activities []AccountActivity
 	if err := json.NewDecoder(res.Body).Decode(&activities); err != nil {
 		return []AccountActivity{}, err
@@ -213,10 +201,6 @@ func (c *Client) getAccountHolds(timestamp, signature string, req *http.Request)
 		return []AccountHold{}, err
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, coinbaseError(res)
-	}
 
 	var holds []AccountHold
 	if err := json.NewDecoder(res.Body).Decode(&holds); err != nil {

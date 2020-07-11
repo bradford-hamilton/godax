@@ -1,6 +1,7 @@
 package godax
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -33,11 +34,31 @@ func newClient(sandbox bool) (*Client, error) {
 	return c, nil
 }
 
+func (c *Client) createAndSignRequest(timestamp, method, path string, body []byte, qp *QueryParams) (*http.Request, string, error) {
+	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, "", err
+	}
+	if qp != nil {
+		c.setQueryParams(req, *qp)
+	}
+
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), string(body))
+	if err != nil {
+		return nil, "", err
+	}
+
+	return req, sig, nil
+}
+
 func (c *Client) do(timestamp string, signature string, req *http.Request) (*http.Response, error) {
 	c.setHeaders(req, timestamp, signature)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, coinbaseError(res)
 	}
 	return res, nil
 }

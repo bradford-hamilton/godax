@@ -129,10 +129,6 @@ func (c *Client) placeOrder(timestamp, signature string, req *http.Request, body
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return Order{}, coinbaseError(res)
-	}
-
 	var order Order
 	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
 		return Order{}, err
@@ -148,10 +144,6 @@ func (c *Client) cancelOrder(timestamp, signature string, req *http.Request) (st
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return "", coinbaseError(res)
-	}
-
 	orderID, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
@@ -165,10 +157,6 @@ func (c *Client) cancelAllOrders(timestamp, signature string, req *http.Request)
 		return nil, err
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, coinbaseError(res)
-	}
 
 	var orderIDs []string
 	if err := json.NewDecoder(res.Body).Decode(&orderIDs); err != nil {
@@ -184,10 +172,6 @@ func (c *Client) listOrders(timestamp, signature string, req *http.Request) ([]O
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, coinbaseError(res)
-	}
-
 	var orders []Order
 	if err := json.NewDecoder(res.Body).Decode(&orders); err != nil {
 		return nil, err
@@ -201,10 +185,6 @@ func (c *Client) getOrder(timestamp, signature string, req *http.Request) (Order
 		return Order{}, err
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return Order{}, coinbaseError(res)
-	}
 
 	var order Order
 	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {

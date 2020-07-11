@@ -1,7 +1,6 @@
 package godax
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -30,6 +29,8 @@ const (
 	ProductID Param = "product_id"
 	Status    Param = "status"
 )
+
+var noBody = []byte{}
 
 // QueryParams represent the available query params for any given coinbase pro call.
 type QueryParams map[Param]string
@@ -64,14 +65,9 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 	method := http.MethodGet
 	path := "/accounts"
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return nil, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
-	if err != nil {
-		return []ListAccount{}, err
 	}
 
 	return c.listAccounts(timestamp, sig, req)
@@ -85,12 +81,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return Account{}, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return Account{}, err
 	}
@@ -108,14 +99,9 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return nil, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
-	if err != nil {
-		return []AccountActivity{}, err
 	}
 
 	return c.getAccountHistory(timestamp, sig, req)
@@ -132,14 +118,9 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/holds"
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return nil, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
-	if err != nil {
-		return []AccountHold{}, err
 	}
 
 	return c.getAccountHolds(timestamp, sig, req)
@@ -160,12 +141,7 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 		return Order{}, err
 	}
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(body))
-	if err != nil {
-		return Order{}, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), string(body))
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
 	if err != nil {
 		return Order{}, err
 	}
@@ -183,13 +159,7 @@ func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderI
 	method := http.MethodDelete
 	path := "/orders/" + orderID
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return "", err
-	}
-	c.setQueryParams(req, qp)
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
@@ -207,13 +177,7 @@ func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (cance
 	method := http.MethodDelete
 	path := "/orders/client:" + clientOID
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return "", err
-	}
-	c.setQueryParams(req, qp)
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
@@ -230,13 +194,7 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 	method := http.MethodDelete
 	path := "/orders"
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return nil, err
-	}
-	c.setQueryParams(req, qp)
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return nil, err
 	}
@@ -263,15 +221,7 @@ func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	method := http.MethodGet
 	path := "/orders"
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return nil, err
-	}
-	// TODO: To specify multiple statuses, use the status query
-	// param multiple times: /orders?status=done&status=pending
-	c.setQueryParams(req, qp)
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return nil, err
 	}
@@ -288,12 +238,7 @@ func (c *Client) GetOrderByID(orderID string) (Order, error) {
 	method := http.MethodGet
 	path := "/orders/" + orderID
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return Order{}, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return Order{}, err
 	}
@@ -310,12 +255,7 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 	method := http.MethodGet
 	path := "/orders/client:" + orderClientOID
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return Order{}, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return Order{}, err
 	}
@@ -339,15 +279,9 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 		return nil, ErrMissingOrderOrProductID
 	}
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return nil, err
-	}
-	c.setQueryParams(req, qp)
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
-	if err != nil {
-		return []Fill{}, err
 	}
 
 	return c.listFills(timestamp, sig, req)
@@ -359,12 +293,7 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 	method := http.MethodGet
 	path := "/users/self/exchange-limits"
 
-	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
-	if err != nil {
-		return ExchangeLimit{}, err
-	}
-
-	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return ExchangeLimit{}, err
 	}
