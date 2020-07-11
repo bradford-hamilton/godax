@@ -61,13 +61,12 @@ func (c *Client) listFills(timestamp, signature string, req *http.Request) ([]Fi
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, orderError(res)
+		return nil, coinbaseError(res)
 	}
 
 	var fills []Fill
 	if err := json.NewDecoder(res.Body).Decode(&fills); err != nil {
 		return nil, err
 	}
-
 	return fills, nil
 }

@@ -14,26 +14,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	// accounts, err := client.ListAccounts()
-	// fmt.Println(accounts)
+	accounts, err := client.ListAccounts()
+	fmt.Printf("\naccounts: %+v\n", accounts)
 
-	// account, err := client.GetAccount(accounts[0].ID)
-	// fmt.Println(account)
+	account, err := client.GetAccount(accounts[0].ID)
+	fmt.Printf("\naccount: %+v\n", account)
 
-	// his, err := client.GetAccountHistory(accounts[1].ID)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
-	// fmt.Println(his)
+	his, err := client.GetAccountHistory(accounts[1].ID)
+	if err != nil {
+		fmt.Println("err getting account history", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nhistory: %+v\n", his)
 
-	// holds, err := client.GetAccountHolds(accounts[0].ID)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
+	holds, err := client.GetAccountHolds(accounts[0].ID)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
-	// fmt.Println("HODLS", holds)
+	fmt.Printf("\nholds: %+v\n", holds)
 
 	o, err := client.PlaceOrder(godax.OrderParams{
 		CommonOrderParams: godax.CommonOrderParams{
@@ -45,35 +45,37 @@ func main() {
 		},
 	})
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("err ordering:", err)
 	}
 
-	_, err = client.CancelOrderByID(o.ID, godax.QueryParams{godax.ProductID: o.ProductID})
+	fmt.Printf("\norder: %+v\n", o)
+
+	orderID1, err := client.CancelOrderByID(o.ID, godax.QueryParams{godax.ProductID: o.ProductID})
 	if err != nil {
 		fmt.Println("err canceling:", err)
 	}
 
-	// fmt.Printf("orderID1: %s\n", orderID1)
+	fmt.Printf("\norderID1: %s\n", orderID1)
 
-	o, err = client.PlaceOrder(godax.OrderParams{
-		CommonOrderParams: godax.CommonOrderParams{
-			Side:      "buy",
-			ProductID: "BTC-USD",
-			Type:      "market",
-			Size:      "0.01",
-			ClientOID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3",
-		},
-	})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// _, err = client.CancelOrderByClientOID("c6dfb02e-7f65-4e02-8fa3-866d46ed15b3", &o.ProductID)
+	// o, err = client.PlaceOrder(godax.OrderParams{
+	// 	CommonOrderParams: godax.CommonOrderParams{
+	// 		Side:      "buy",
+	// 		ProductID: "BTC-USD",
+	// 		Type:      "market",
+	// 		Size:      "0.01",
+	// 		ClientOID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3",
+	// 	},
+	// })
 	// if err != nil {
-	// 	fmt.Println("err canceling:", err)
+	// 	fmt.Println(err)
 	// }
 
-	// fmt.Printf("orderID2: %s\n", orderID2)
+	// // _, err = client.CancelOrderByClientOID("c6dfb02e-7f65-4e02-8fa3-866d46ed15b3", &o.ProductID)
+	// // if err != nil {
+	// // 	fmt.Println("err canceling:", err)
+	// // }
+
+	// // fmt.Printf("orderID2: %s\n", orderID2)
 
 	for i := 0; i < 5; i++ {
 		_, err = client.PlaceOrder(godax.OrderParams{
@@ -87,37 +89,38 @@ func main() {
 			},
 		})
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("err placing an order: ", err)
+			os.Exit(1)
 		}
 	}
 
-	ords, err := client.ListOrders(godax.QueryParams{})
+	ords, err := client.ListOrders(godax.QueryParams{godax.ProductID: "BTC-USD"})
 	if err != nil {
 		fmt.Println("err listing orders: ", err)
 		os.Exit(1)
 	}
-	// fmt.Printf("Orders here: %+v\n", ords)
+	fmt.Printf("\norders: %+v\n", ords)
 
-	gotOrder, err := client.GetOrderByID(ords[0].ID)
-	fmt.Printf("gotOrder: %+v\n", gotOrder)
+	// gotOrder, err := client.GetOrderByID(ords[0].ID)
+	// fmt.Printf("gotOrder: %+v\n", gotOrder)
 
-	_, err = client.CancelAllOrders(nil)
+	orderIDs, err := client.CancelAllOrders(nil)
 	if err != nil {
 		fmt.Println("err canceling:", err)
 		os.Exit(1)
 	}
 
-	// fmt.Printf("orderIDs: %+v", orderIDs)
+	fmt.Printf("\norderIDs: %+v\n", orderIDs)
 
 	// fmt.Printf("Orders should be empty now: %+v\n", ords)
-	qp := godax.QueryParams{"order_id": o.ID}
+	qp := godax.QueryParams{godax.OrderID: o.ID}
 	fills, err := client.ListFills(qp)
 	if err != nil {
 		fmt.Printf("err getting fills: %+v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("fills HERE IS WHAT I CARE ABOUT: %+v\n", fills)
+	fmt.Printf("\nfills: %+v\n", fills)
 
 	limits, err := client.GetCurrentExchangeLimits()
 	if err != nil {
@@ -125,7 +128,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("limits: %+v", limits)
+	fmt.Printf("\nlimits: %+v\n", limits)
 }
 
 func stringPtr(str string) *string {

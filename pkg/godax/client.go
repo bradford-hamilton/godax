@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -18,7 +19,7 @@ type HTTPClient interface {
 
 // CoinbaseErrRes represents the shape that comes back when a status code is non-200
 type CoinbaseErrRes struct {
-	// Message is an error string
+	// Message contains the important error information from coinbase
 	Message string `json:"message"`
 }
 
@@ -33,7 +34,6 @@ func newClient(sandbox bool) (*Client, error) {
 }
 
 func (c *Client) do(timestamp string, signature string, req *http.Request) (*http.Response, error) {
-	fmt.Println(req.URL.Path)
 	c.setHeaders(req, timestamp, signature)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -84,4 +84,12 @@ func (c *Client) generateSig(timestamp, method, path, body string) (string, erro
 	}
 
 	return base64.StdEncoding.EncodeToString(hash.Sum(nil)), nil
+}
+
+func coinbaseError(res *http.Response) error {
+	var err CoinbaseErrRes
+	if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
+		return err
+	}
+	return fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
 }

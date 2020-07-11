@@ -40,7 +40,7 @@ func StringPtr(str string) *string {
 }
 
 // ErrMissingOrderOrProductID TODO: does this feel weird and one offy right now?
-var ErrMissingOrderOrProductID = errors.New("please provide either an orderID or productID")
+var ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.
 func NewClient() (*Client, error) {
@@ -69,7 +69,7 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 		return nil, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return []ListAccount{}, err
 	}
@@ -90,7 +90,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 		return Account{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return Account{}, err
 	}
@@ -113,7 +113,7 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 		return nil, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return []AccountActivity{}, err
 	}
@@ -137,7 +137,7 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 		return nil, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return []AccountHold{}, err
 	}
@@ -165,7 +165,7 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 		return Order{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, string(body))
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), string(body))
 	if err != nil {
 		return Order{}, err
 	}
@@ -189,7 +189,7 @@ func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderI
 	}
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return "", err
 	}
@@ -211,10 +211,9 @@ func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (cance
 	if err != nil {
 		return "", err
 	}
-
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return "", err
 	}
@@ -235,10 +234,9 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 	if err != nil {
 		return nil, err
 	}
-
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return nil, err
 	}
@@ -269,12 +267,11 @@ func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// TODO: To specify multiple statuses, use the status query
 	// param multiple times: /orders?status=done&status=pending
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +293,7 @@ func (c *Client) GetOrderByID(orderID string) (Order, error) {
 		return Order{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return Order{}, err
 	}
@@ -318,7 +315,7 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 		return Order{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return Order{}, err
 	}
@@ -338,18 +335,17 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 	method := http.MethodGet
 	path := "/fills"
 
-	if qp[ProductID] == "" || qp[OrderID] == "" {
-		return nil, errors.New("TODO: ")
+	if qp[ProductID] == "" && qp[OrderID] == "" {
+		return nil, ErrMissingOrderOrProductID
 	}
 
 	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(nil))
 	if err != nil {
 		return nil, err
 	}
-
 	c.setQueryParams(req, qp)
 
-	sig, err := c.generateSig(timestamp, method, req.URL.Path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return []Fill{}, err
 	}
@@ -368,7 +364,7 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 		return ExchangeLimit{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), "")
 	if err != nil {
 		return ExchangeLimit{}, err
 	}

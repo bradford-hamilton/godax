@@ -2,7 +2,6 @@ package godax
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -131,7 +130,7 @@ func (c *Client) placeOrder(timestamp, signature string, req *http.Request, body
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return Order{}, orderError(res)
+		return Order{}, coinbaseError(res)
 	}
 
 	var order Order
@@ -150,16 +149,14 @@ func (c *Client) cancelOrder(timestamp, signature string, req *http.Request) (st
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return "", orderError(res)
+		return "", coinbaseError(res)
 	}
 
-	b, err := ioutil.ReadAll(res.Body)
+	orderID, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
-	orderID := string(b)
-
-	return orderID, nil
+	return string(orderID), nil
 }
 
 func (c *Client) cancelAllOrders(timestamp, signature string, req *http.Request) ([]string, error) {
@@ -170,14 +167,13 @@ func (c *Client) cancelAllOrders(timestamp, signature string, req *http.Request)
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, orderError(res)
+		return nil, coinbaseError(res)
 	}
 
 	var orderIDs []string
 	if err := json.NewDecoder(res.Body).Decode(&orderIDs); err != nil {
 		return nil, err
 	}
-
 	return orderIDs, nil
 }
 
@@ -188,11 +184,14 @@ func (c *Client) listOrders(timestamp, signature string, req *http.Request) ([]O
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return nil, coinbaseError(res)
+	}
+
 	var orders []Order
 	if err := json.NewDecoder(res.Body).Decode(&orders); err != nil {
 		return nil, err
 	}
-
 	return orders, nil
 }
 
@@ -203,18 +202,13 @@ func (c *Client) getOrder(timestamp, signature string, req *http.Request) (Order
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return Order{}, coinbaseError(res)
+	}
+
 	var order Order
 	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
 		return Order{}, err
 	}
-
 	return order, nil
-}
-
-func orderError(res *http.Response) error {
-	var err CoinbaseErrRes
-	if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
-		return err
-	}
-	return fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
 }

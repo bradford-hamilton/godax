@@ -78,10 +78,13 @@ func (c *Client) getLimits(timestamp, signature string, req *http.Request) (Exch
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return ExchangeLimit{}, coinbaseError(res)
+	}
+
 	var limit ExchangeLimit
 	if err := json.NewDecoder(res.Body).Decode(&limit); err != nil {
 		return ExchangeLimit{}, err
 	}
-
 	return limit, nil
 }
