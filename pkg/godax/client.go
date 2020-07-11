@@ -5,6 +5,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -18,7 +20,7 @@ type HTTPClient interface {
 
 // CoinbaseErrRes represents the shape that comes back when a status code is non-200
 type CoinbaseErrRes struct {
-	// Message is an error string
+	// Message contains the important error information from coinbase
 	Message string `json:"message"`
 }
 
@@ -32,15 +34,31 @@ func newClient(sandbox bool) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) do(timestamp, method, path, signature string, body []byte) (*http.Response, error) {
+func (c *Client) createAndSignRequest(timestamp, method, path string, body []byte, qp *QueryParams) (*http.Request, string, error) {
 	req, err := http.NewRequest(method, c.baseRestURL+path, bytes.NewBuffer(body))
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	if qp != nil {
+		c.setQueryParams(req, *qp)
+	}
+
+	sig, err := c.generateSig(timestamp, method, req.URL.RequestURI(), string(body))
+	if err != nil {
+		return nil, "", err
+	}
+
+	return req, sig, nil
+}
+
+func (c *Client) do(timestamp string, signature string, req *http.Request) (*http.Response, error) {
 	c.setHeaders(req, timestamp, signature)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, coinbaseError(res)
 	}
 	return res, nil
 }
@@ -53,6 +71,16 @@ func (c *Client) setHeaders(req *http.Request, timestamp string, signature strin
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
+}
+
+func (c *Client) setQueryParams(req *http.Request, qp QueryParams) {
+	q := req.URL.Query()
+	for k, v := range qp {
+		if v != "" {
+			q.Add(string(k), v)
+		}
+	}
+	req.URL.RawQuery = q.Encode()
 }
 
 // generateSig generates the signature for the CB-ACCESS-SIGN header.
@@ -77,4 +105,12 @@ func (c *Client) generateSig(timestamp, method, path, body string) (string, erro
 	}
 
 	return base64.StdEncoding.EncodeToString(hash.Sum(nil)), nil
+}
+
+func coinbaseError(res *http.Response) error {
+	var err CoinbaseErrRes
+	if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
+		return err
+	}
+	return fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
 }

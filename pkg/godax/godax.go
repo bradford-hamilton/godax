@@ -19,8 +19,29 @@ type Client struct {
 	httpClient  HTTPClient
 }
 
+// Param is a type alias for a string. The hope is that godax can offer all of the available
+// query params as constants, but also if you need to - you can create your own Param to use.
+type Param string
+
+// Available query params for all coinbase pro calls
+const (
+	OrderID   Param = "order_id"
+	ProductID Param = "product_id"
+	Status    Param = "status"
+)
+
+var noBody = []byte{}
+
+// QueryParams represent the available query params for any given coinbase pro call.
+type QueryParams map[Param]string
+
+// StringPtr is a simple helper for getting pointers to your strings.
+func StringPtr(str string) *string {
+	return &str
+}
+
 // ErrMissingOrderOrProductID TODO: does this feel weird and one offy right now?
-var ErrMissingOrderOrProductID = errors.New("please provide either an orderID or productID")
+var ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.
 func NewClient() (*Client, error) {
@@ -44,12 +65,12 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 	method := http.MethodGet
 	path := "/accounts"
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
-		return []ListAccount{}, err
+		return nil, err
 	}
 
-	return c.listAccounts(timestamp, method, path, sig)
+	return c.listAccounts(timestamp, sig, req)
 }
 
 // GetAccount retrieves information for a single account. Use this endpoint when you know the
@@ -60,12 +81,12 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return Account{}, err
 	}
 
-	return c.getAccount(accountID, timestamp, method, path, sig)
+	return c.getAccount(timestamp, sig, req)
 }
 
 // GetAccountHistory lists account activity of the API key's profile. Account activity either increases
@@ -78,12 +99,12 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
-		return []AccountActivity{}, err
+		return nil, err
 	}
 
-	return c.getAccountHistory(accountID, timestamp, method, path, sig)
+	return c.getAccountHistory(timestamp, sig, req)
 }
 
 // GetAccountHolds lists holds of an account that belong to the same profile as the API key.
@@ -97,12 +118,12 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/holds"
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
-		return []AccountHold{}, err
+		return nil, err
 	}
 
-	return c.getAccountHolds(accountID, timestamp, method, path, sig)
+	return c.getAccountHolds(timestamp, sig, req)
 }
 
 // PlaceOrder allows you to place two types of orders: limit and market. Orders can only be
@@ -120,12 +141,12 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 		return Order{}, err
 	}
 
-	sig, err := c.generateSig(timestamp, method, path, string(body))
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
 	if err != nil {
 		return Order{}, err
 	}
 
-	return c.placeOrder(timestamp, method, path, sig, body)
+	return c.placeOrder(timestamp, sig, req, body)
 }
 
 // CancelOrderByID cancels a previously placed order. Order must belong to the profile that
@@ -133,20 +154,17 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 // purged. This means the order details will not be available with GetOrderByID or GetOrderByClientOID.
 // The product ID of the order is not required so if you don't have it you can pass nil here.
 // The request will be more performant if you include it. This endpoint requires the "trade" permission.
-func (c *Client) CancelOrderByID(orderID string, productID *string) (canceledOrderID string, err error) {
+func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderID string, err error) {
 	timestamp := unixTime()
 	method := http.MethodDelete
 	path := "/orders/" + orderID
-	if productID != nil {
-		path += "?product_id=" + *productID
-	}
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
 
-	return c.cancelOrder(timestamp, method, path, sig)
+	return c.cancelOrder(timestamp, sig, req)
 }
 
 // CancelOrderByClientOID cancels a previously placed order. Order must belong to the profile that
@@ -154,40 +172,34 @@ func (c *Client) CancelOrderByID(orderID string, productID *string) (canceledOrd
 // purged. This means the order details will not be available with GetOrderByID or GetOrderByClientOID.
 // The product ID of the order is not required so if you don't have it you can pass nil here.
 // The request will be more performant if you include it. This endpoint requires the "trade" permission.
-func (c *Client) CancelOrderByClientOID(clientOID string, productID *string) (canceledOrderID string, err error) {
+func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (canceledOrderID string, err error) {
 	timestamp := unixTime()
 	method := http.MethodDelete
 	path := "/orders/client:" + clientOID
-	if productID != nil {
-		path += "?product_id=" + *productID
-	}
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
 
-	return c.cancelOrder(timestamp, method, path, sig)
+	return c.cancelOrder(timestamp, sig, req)
 }
 
 // CancelAllOrders cancel all open orders from the profile that the API key belongs to. The response is
 // a list of ids of the canceled orders. This endpoint requires the "trade" permission. The productID
 // param is opitonal and a pointer, so you can pass nil. If you do provide the productID here, you will
 // only cancel orders open for that specific product.
-func (c *Client) CancelAllOrders(productID *string) (canceledOrderIDs []string, err error) {
+func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err error) {
 	timestamp := unixTime()
 	method := http.MethodDelete
 	path := "/orders"
-	if productID != nil {
-		path += "?product_id=" + *productID
-	}
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.cancelAllOrders(timestamp, method, path, sig)
+	return c.cancelAllOrders(timestamp, sig, req)
 }
 
 // ListOrders lists your current open orders from the profile that the API key belongs to. Only open or un-settled
@@ -204,30 +216,17 @@ func (c *Client) CancelAllOrders(productID *string) (canceledOrderIDs []string, 
 // endpoint once when you start trading to obtain the current state of any open orders. executed_value is the cumulative
 // match size * price and is only present for orders placed after 2016-05-20. Open orders may change state between the
 // request and the response depending on market conditions.
-func (c *Client) ListOrders(status, productID *string) ([]Order, error) {
+func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/orders"
 
-	// TODO: come back to this with a better solution for query params.
-	// TODO: To specify multiple statuses, use the status query argument multiple times: /orders?status=done&status=pending
-	if status != nil {
-		qp := "?status=" + *status
-		if productID != nil {
-			path += qp + "&product_id=" + *productID
-		} else {
-			path += qp
-		}
-	} else if productID != nil {
-		path += "?status=all&product_id=" + *productID
-	}
-
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.listOrders(timestamp, method, path, sig)
+	return c.listOrders(timestamp, sig, req)
 }
 
 // GetOrderByID gets an order by its ID. This endpoint requires either the "view" or "trade" permission.
@@ -239,12 +238,12 @@ func (c *Client) GetOrderByID(orderID string) (Order, error) {
 	method := http.MethodGet
 	path := "/orders/" + orderID
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return Order{}, err
 	}
 
-	return c.getOrder(timestamp, method, path, sig)
+	return c.getOrder(timestamp, sig, req)
 }
 
 // GetOrderByClientOID gets an order by its client OID. This endpoint requires either the "view" or "trade"
@@ -256,12 +255,12 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 	method := http.MethodGet
 	path := "/orders/client:" + orderClientOID
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return Order{}, err
 	}
 
-	return c.getOrder(timestamp, method, path, sig)
+	return c.getOrder(timestamp, sig, req)
 }
 
 // ListFills gets a list of recent fills of the API key's profile. This endpoint requires either the "view"
@@ -271,31 +270,21 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 // Fees are recorded in two stages. Immediately after the matching engine completes a match, the fill
 // is inserted into our datastore. Once the fill is recorded, a settlement process will settle the fill and credit
 // both trading counterparties. The fee field indicates the fees charged for this individual fill.
-func (c *Client) ListFills(orderID, productID *string) ([]Fill, error) {
+func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/fills"
 
-	// TODO: another query param area to clean up. Thinking a struct could
-	// maybe be a better call? Look into this some.
-	if orderID == nil && productID == nil {
-		return []Fill{}, ErrMissingOrderOrProductID
-	}
-	if orderID != nil {
-		path += "?order_id=" + *orderID
-		if productID != nil {
-			path += "&order_id=" + *productID
-		}
-	} else {
-		path += "?product_id=" + *productID
+	if qp[ProductID] == "" && qp[OrderID] == "" {
+		return nil, ErrMissingOrderOrProductID
 	}
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
-		return []Fill{}, err
+		return nil, err
 	}
 
-	return c.listFills(timestamp, method, path, sig)
+	return c.listFills(timestamp, sig, req)
 }
 
 // GetCurrentExchangeLimits will return information on your payment method transfer limits, as well as buy/sell limits per currency.
@@ -304,10 +293,10 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 	method := http.MethodGet
 	path := "/users/self/exchange-limits"
 
-	sig, err := c.generateSig(timestamp, method, path, "")
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
 	if err != nil {
 		return ExchangeLimit{}, err
 	}
 
-	return c.getLimits(timestamp, method, path, sig)
+	return c.getLimits(timestamp, sig, req)
 }

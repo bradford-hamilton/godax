@@ -642,9 +642,10 @@ func TestClient_CancelOrderByID(t *testing.T) {
 	productID := "BTC-USD"
 
 	type args struct {
-		orderID   string
-		productID *string
+		orderID string
+		qp      QueryParams
 	}
+
 	tests := [...]struct {
 		name                string
 		fields              fields
@@ -656,14 +657,14 @@ func TestClient_CancelOrderByID(t *testing.T) {
 		{
 			name:                "when a successful cancel order has been made with no product ID",
 			fields:              defaultFields(),
-			args:                args{orderID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3", productID: nil},
+			args:                args{orderID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3", qp: QueryParams{}},
 			wantCanceledOrderID: "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3",
 			wantRaw:             "c6dfb02e-7f65-4e02-8fa3-866d46ed15b3",
 		},
 		{
 			name:                "when a successful cancel order has been made with a product ID",
 			fields:              defaultFields(),
-			args:                args{orderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8", productID: &productID},
+			args:                args{orderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8", qp: QueryParams{ProductID: productID}},
 			wantCanceledOrderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8",
 			wantRaw:             "4f92c553-7c71-4b3a-8878-f415e6a2f0d8",
 		},
@@ -681,7 +682,7 @@ func TestClient_CancelOrderByID(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			gotCanceledOrderID, err := c.CancelOrderByID(tt.args.orderID, tt.args.productID)
+			gotCanceledOrderID, err := c.CancelOrderByID(tt.args.orderID, tt.args.qp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.CancelOrderByID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -705,8 +706,9 @@ func TestClient_CancelOrderByClientOID(t *testing.T) {
 
 	type args struct {
 		clientOID string
-		productID *string
+		qp        QueryParams
 	}
+
 	tests := [...]struct {
 		name                string
 		fields              fields
@@ -718,14 +720,14 @@ func TestClient_CancelOrderByClientOID(t *testing.T) {
 		{
 			name:                "when a successful cancel order has been made with no product ID",
 			fields:              defaultFields(),
-			args:                args{clientOID: "408290f2-f13e-465d-a2ff-98a29d130bd4", productID: nil},
+			args:                args{clientOID: "408290f2-f13e-465d-a2ff-98a29d130bd4", qp: QueryParams{}},
 			wantCanceledOrderID: "408290f2-f13e-465d-a2ff-98a29d130bd4",
 			wantRaw:             "408290f2-f13e-465d-a2ff-98a29d130bd4",
 		},
 		{
 			name:                "when a successful cancel order has been made with a product ID",
 			fields:              defaultFields(),
-			args:                args{clientOID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8", productID: &productID},
+			args:                args{clientOID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8", qp: QueryParams{ProductID: productID}},
 			wantCanceledOrderID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8",
 			wantRaw:             "52e06257-dc1f-4e82-b115-c81f5f07a9d8",
 		},
@@ -743,7 +745,7 @@ func TestClient_CancelOrderByClientOID(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			gotCanceledOrderID, err := c.CancelOrderByClientOID(tt.args.clientOID, tt.args.productID)
+			gotCanceledOrderID, err := c.CancelOrderByClientOID(tt.args.clientOID, tt.args.qp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.CancelOrderByClientOID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -765,9 +767,8 @@ func TestClient_CancelOrderByClientOID(t *testing.T) {
 func TestClient_CancelAllOrders(t *testing.T) {
 	productID := "BTC-USD"
 
-	type args struct {
-		productID *string
-	}
+	type args struct{ qp QueryParams }
+
 	tests := [...]struct {
 		name                 string
 		fields               fields
@@ -779,7 +780,7 @@ func TestClient_CancelAllOrders(t *testing.T) {
 		{
 			name:   "when a successful cancel all orders call has been made with no product ID",
 			fields: defaultFields(),
-			args:   args{productID: nil},
+			args:   args{QueryParams{}},
 			wantCanceledOrderIDs: []string{
 				"920dfecf-2dde-491d-9dd1-ca9f335a0663",
 				"0189696d-7b3e-4e9d-aa27-5df9f620466f",
@@ -794,7 +795,7 @@ func TestClient_CancelAllOrders(t *testing.T) {
 		{
 			name:   "when a successful cancel all orders call has been made with a product ID",
 			fields: defaultFields(),
-			args:   args{productID: &productID},
+			args:   args{QueryParams{ProductID: productID}},
 			wantCanceledOrderIDs: []string{
 				"db5b5cb9-3a86-4d44-b62d-c2c2c39d1446",
 				"7fc4a8bf-e22b-46f2-a881-5bedd2bc1571",
@@ -820,7 +821,7 @@ func TestClient_CancelAllOrders(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			gotCanceledOrderIDs, err := c.CancelAllOrders(tt.args.productID)
+			gotCanceledOrderIDs, err := c.CancelAllOrders(tt.args.qp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.CancelAllOrders() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -843,10 +844,8 @@ func TestClient_ListOrders(t *testing.T) {
 	productID := "BTC-USD"
 	status := "pending"
 
-	type args struct {
-		status    *string
-		productID *string
-	}
+	type args struct{ qp QueryParams }
+
 	tests := [...]struct {
 		name    string
 		fields  fields
@@ -858,7 +857,7 @@ func TestClient_ListOrders(t *testing.T) {
 		{
 			name:   "when a successful list orders call has been made with no product ID",
 			fields: defaultFields(),
-			args:   args{status: nil, productID: nil},
+			args:   args{QueryParams{Status: "", ProductID: ""}},
 			want: []Order{{
 				ID:            "b5bebfc6-4ee1-463c-8a57-7aa98eeb3f7e",
 				CreatedAt:     "2020-07-02T19:03:55.864229Z",
@@ -903,7 +902,7 @@ func TestClient_ListOrders(t *testing.T) {
 		{
 			name:   "when a successful list orders call has been made with a product ID",
 			fields: defaultFields(),
-			args:   args{productID: &productID},
+			args:   args{QueryParams{ProductID: productID}},
 			want: []Order{{
 				ID:            "5b598eca-27cd-4ffc-bc17-8d5eaae67541",
 				CreatedAt:     "2020-07-02T19:03:55.864229Z",
@@ -986,7 +985,7 @@ func TestClient_ListOrders(t *testing.T) {
 		{
 			name:   "when a successful list orders call has been made with a status filter",
 			fields: defaultFields(),
-			args:   args{status: &status},
+			args:   args{QueryParams{Status: status}},
 			want: []Order{{
 				ID:            "2a795d2e-f77a-4ac6-8998-767fe36fbaed",
 				CreatedAt:     "2020-07-02T19:03:55.864229Z",
@@ -1080,7 +1079,7 @@ func TestClient_ListOrders(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			got, err := c.ListOrders(tt.args.status, tt.args.productID)
+			got, err := c.ListOrders(tt.args.qp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.ListOrders() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1100,9 +1099,8 @@ func TestClient_ListOrders(t *testing.T) {
 }
 
 func TestClient_GetOrderByID(t *testing.T) {
-	type args struct {
-		orderID string
-	}
+	type args struct{ orderID string }
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -1193,9 +1191,8 @@ func TestClient_GetOrderByID(t *testing.T) {
 }
 
 func TestClient_GetOrderByClientOID(t *testing.T) {
-	type args struct {
-		orderClientOID string
-	}
+	type args struct{ orderClientOID string }
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -1289,10 +1286,8 @@ func TestClient_ListFills(t *testing.T) {
 	orderID := "d50ec984-77a8-460a-b958-66f114b0de9b"
 	productID := "BTC-USD"
 
-	type args struct {
-		orderID   *string
-		productID *string
-	}
+	type args struct{ qp QueryParams }
+
 	tests := []struct {
 		name    string
 		fields  fields
@@ -1304,7 +1299,7 @@ func TestClient_ListFills(t *testing.T) {
 		{
 			name:   "when a successful call is made to list fills it returns a slice of fills",
 			fields: defaultFields(),
-			args:   args{orderID: &orderID, productID: &productID},
+			args:   args{qp: QueryParams{OrderID: orderID, ProductID: productID}},
 			want: []Fill{{
 				TradeID:   74,
 				ProductID: "BTC-USD",
@@ -1333,7 +1328,7 @@ func TestClient_ListFills(t *testing.T) {
 		{
 			name:    "when neither an orderID or productID is provided by the caller, it should return an error",
 			fields:  defaultFields(),
-			args:    args{orderID: nil, productID: nil},
+			args:    args{qp: QueryParams{}},
 			want:    []Fill{},
 			wantErr: true,
 			wantRaw: `[]`,
@@ -1352,7 +1347,8 @@ func TestClient_ListFills(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			got, err := c.ListFills(tt.args.orderID, tt.args.productID)
+			qp := QueryParams{OrderID: tt.args.qp[OrderID], ProductID: tt.args.qp[ProductID]}
+			got, err := c.ListFills(qp)
 			if err != nil {
 				if tt.wantErr && err == ErrMissingOrderOrProductID {
 					return

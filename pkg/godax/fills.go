@@ -53,21 +53,16 @@ type Fill struct {
 	Side string `json:"side"`
 }
 
-func (c *Client) listFills(timestamp, method, path, signature string) ([]Fill, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) listFills(timestamp, signature string, req *http.Request) ([]Fill, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, orderError(res)
-	}
-
 	var fills []Fill
 	if err := json.NewDecoder(res.Body).Decode(&fills); err != nil {
 		return nil, err
 	}
-
 	return fills, nil
 }

@@ -2,7 +2,6 @@ package godax
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -123,16 +122,12 @@ type MarketOrderParams struct {
 }
 
 // placeOrder allows you to place two types of orders: limit and market
-func (c *Client) placeOrder(timestamp, method, path, signature string, body []byte) (Order, error) {
-	res, err := c.do(timestamp, method, path, signature, body)
+func (c *Client) placeOrder(timestamp, signature string, req *http.Request, body []byte) (Order, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return Order{}, err
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return Order{}, orderError(res)
-	}
 
 	var order Order
 	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
@@ -142,47 +137,36 @@ func (c *Client) placeOrder(timestamp, method, path, signature string, body []by
 	return order, nil
 }
 
-func (c *Client) cancelOrder(timestamp, method, path, signature string) (string, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) cancelOrder(timestamp, signature string, req *http.Request) (string, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return "", orderError(res)
-	}
-
-	b, err := ioutil.ReadAll(res.Body)
+	orderID, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
-	orderID := string(b)
-
-	return orderID, nil
+	return string(orderID), nil
 }
 
-func (c *Client) cancelAllOrders(timestamp, method, path, signature string) ([]string, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) cancelAllOrders(timestamp, signature string, req *http.Request) ([]string, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return nil, orderError(res)
-	}
 
 	var orderIDs []string
 	if err := json.NewDecoder(res.Body).Decode(&orderIDs); err != nil {
 		return nil, err
 	}
-
 	return orderIDs, nil
 }
 
-func (c *Client) listOrders(timestamp, method, path, signature string) ([]Order, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) listOrders(timestamp, signature string, req *http.Request) ([]Order, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return nil, err
 	}
@@ -192,12 +176,11 @@ func (c *Client) listOrders(timestamp, method, path, signature string) ([]Order,
 	if err := json.NewDecoder(res.Body).Decode(&orders); err != nil {
 		return nil, err
 	}
-
 	return orders, nil
 }
 
-func (c *Client) getOrder(timestamp, method, path, signature string) (Order, error) {
-	res, err := c.do(timestamp, method, path, signature, nil)
+func (c *Client) getOrder(timestamp, signature string, req *http.Request) (Order, error) {
+	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return Order{}, err
 	}
@@ -207,14 +190,5 @@ func (c *Client) getOrder(timestamp, method, path, signature string) (Order, err
 	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
 		return Order{}, err
 	}
-
 	return order, nil
-}
-
-func orderError(res *http.Response) error {
-	var err CoinbaseErrRes
-	if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
-		return err
-	}
-	return fmt.Errorf("status code: %d, message: %s", res.StatusCode, err.Message)
 }
