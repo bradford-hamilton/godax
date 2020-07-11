@@ -39,6 +39,7 @@ func (c *Client) createAndSignRequest(timestamp, method, path string, body []byt
 	if err != nil {
 		return nil, "", err
 	}
+
 	if qp != nil {
 		c.setQueryParams(req, *qp)
 	}
@@ -96,14 +97,12 @@ func (c *Client) generateSig(timestamp, method, path, body string) (string, erro
 	if err != nil {
 		return "", err
 	}
-
 	hash := hmac.New(sha256.New, secret)
 	msg := []byte(timestamp + method + path + body)
 
 	if _, err = hash.Write(msg); err != nil {
 		return "", err
 	}
-
 	return base64.StdEncoding.EncodeToString(hash.Sum(nil)), nil
 }
 

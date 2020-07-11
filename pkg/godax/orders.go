@@ -133,7 +133,6 @@ func (c *Client) placeOrder(timestamp, signature string, req *http.Request, body
 	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
 		return Order{}, err
 	}
-
 	return order, nil
 }
 
