@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="coinbase_pro_logo.jpg" alt="coinbase pro logo" height="200" width="200" />
+  <img src="coinbase_pro_logo.png" alt="coinbase pro logo" height="200" width="200" />
   <h1 align="center">godax</h1>
   <a href="https://goreportcard.com/report/github.com/bradford-hamilton/godax">
     <img src="https://goreportcard.com/badge/github.com/bradford-hamilton/godax" alt="coinbase pro logo" align="center" />
