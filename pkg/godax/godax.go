@@ -339,3 +339,18 @@ func (c *Client) ListPaymentMethods() ([]PaymentMethod, error) {
 
 	return c.listPaymentMethods(timestamp, sig, req)
 }
+
+// ListCoinbaseAccounts lists your user's coinbase (non-pro) accounts.
+// This endpoint requires either the "view" or "transfer" permission.
+func (c *Client) ListCoinbaseAccounts() ([]CoinbaseAccount, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/coinbase-accounts"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.listCoinbaseAccounts(timestamp, sig, req)
+}

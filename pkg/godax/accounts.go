@@ -149,6 +149,132 @@ type AccountHold struct {
 	Ref string `json:"ref"`
 }
 
+// CoinbaseAccount represents a Coinbase (non-pro) account.
+
+/*
+[
+    {
+        "id": "fc3a8a57-7142-542d-8436-95a3d82e1622",
+        "name": "ETH Wallet",
+        "balance": "0.00000000",
+        "currency": "ETH",
+        "type": "wallet",
+        "primary": false,
+        "active": true
+    },
+    {
+        "id": "2ae3354e-f1c3-5771-8a37-6228e9d239db",
+        "name": "USD Wallet",
+        "balance": "0.00",
+        "currency": "USD",
+        "type": "fiat",
+        "primary": false,
+        "active": true,
+        "wire_deposit_information": {
+            "account_number": "0199003122",
+            "routing_number": "026013356",
+            "bank_name": "Metropolitan Commercial Bank",
+            "bank_address": "99 Park Ave 4th Fl New York, NY 10016",
+            "bank_country": {
+                "code": "US",
+                "name": "United States"
+            },
+            "account_name": "Coinbase, Inc",
+            "account_address": "548 Market Street, #23008, San Francisco, CA 94104",
+            "reference": "BAOCAEUX"
+        }
+    },
+    {
+        "id": "1bfad868-5223-5d3c-8a22-b5ed371e55cb",
+        "name": "BTC Wallet",
+        "balance": "0.00000000",
+        "currency": "BTC",
+        "type": "wallet",
+        "primary": true,
+        "active": true
+    },
+    {
+        "id": "2a11354e-f133-5771-8a37-622be9b239db",
+        "name": "EUR Wallet",
+        "balance": "0.00",
+        "currency": "EUR",
+        "type": "fiat",
+        "primary": false,
+        "active": true,
+        "sepa_deposit_information": {
+            "iban": "EE957700771001355096",
+            "swift": "LHVBEE22",
+            "bank_name": "AS LHV Pank",
+            "bank_address": "Tartu mnt 2, 10145 Tallinn, Estonia",
+            "bank_country_name": "Estonia",
+            "account_name": "Coinbase UK, Ltd.",
+            "account_address": "9th Floor, 107 Cheapside, London, EC2V 6DN, United Kingdom",
+            "reference": "CBAEUXOVFXOXYX"
+        }
+    },
+    ...
+]
+*/
+type CoinbaseAccount struct {
+	ID                     string          `json:"id"`
+	Name                   string          `json:"name"`
+	Balance                string          `json:"balance"`
+	Currency               string          `json:"currency"`
+	Type                   string          `json:"type"`
+	Primary                bool            `json:"primary"`
+	Active                 bool            `json:"active"`
+	WireDepositInformation WireDepositInfo `json:"wire_deposit_information"`
+	SepaDepositInformation SepaDepositInfo `json:"sepa_deposit_information"`
+	UKDepositInformation   UKDepositInfo   `json:"uk_deposit_information"`
+
+	// These came back on response, but were not in docs, possibly notify coinbase to update
+	HoldBalance         string `json:"hold_balance"`
+	HoldCurrency        string `json:"hold_currency"`
+	AvailableOnConsumer bool   `json:"available_on_consumer"`
+}
+
+// WireDepositInfo describes all the metadata needed for a wire deposit to a bank.
+type WireDepositInfo struct {
+	AccountNumber  string      `json:"account_number"`
+	RoutingNumber  string      `json:"routing_number"`
+	BankName       string      `json:"bank_name"`
+	BankAddress    string      `json:"bank_address"`
+	BankCountry    BankCountry `json:"bank_country"`
+	AccountName    string      `json:"account_name"`
+	AccountAddress string      `json:"account_address"`
+	Reference      string      `json:"reference"`
+}
+
+// SepaDepositInfo describes all the metadata needed for a Sepa desposit.
+type SepaDepositInfo struct {
+	IBAN            string `json:"iban"`
+	Swift           string `json:"swift"`
+	BankName        string `json:"bank_name"`
+	BankAddress     string `json:"bank_address"`
+	BankCountryName string `json:"bank_country_name"`
+	AccountName     string `json:"account_name"`
+	AccountAddress  string `json:"account_address"`
+	Reference       string `json:"reference"`
+}
+
+// UKDepositInfo describes all the metadata needed for a UK desposit.
+type UKDepositInfo struct {
+	SortCode      string `json:"sort_code"`
+	AccountName   string `json:"account_name"`
+	AccountNumber string `json:"account_number"`
+	BankName      string `json:"bank_name"`
+	Reference     string `json:"reference"`
+}
+
+// BankCountry represents a bank country object in a WireDepositInfo
+type BankCountry struct {
+	// Code defines the country code
+	Code string `json:"code"`
+
+	// Name defines the country name
+	Name string `json:"name"`
+}
+
 // listAccounts gets a list of trading accounts from the profile associated with the API key.
 func (c *Client) listAccounts(timestamp, signature string, req *http.Request) ([]ListAccount, error) {
 	res, err := c.do(timestamp, signature, req)
@@ -207,4 +333,19 @@ func (c *Client) getAccountHolds(timestamp, signature string, req *http.Request)
 		return []AccountHold{}, err
 	}
 	return holds, nil
+}
+
+// listCoinbaseAccounts gets a list of trading accounts from the profile associated with the API key.
+func (c *Client) listCoinbaseAccounts(timestamp, signature string, req *http.Request) ([]CoinbaseAccount, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return []CoinbaseAccount{}, err
+	}
+	defer res.Body.Close()
+
+	var cbAccounts []CoinbaseAccount
+	if err := json.NewDecoder(res.Body).Decode(&cbAccounts); err != nil {
+		return []CoinbaseAccount{}, err
+	}
+	return cbAccounts, nil
 }

@@ -146,6 +146,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\npms: %+v\n", pms)
+
+	cbActs, err := client.ListCoinbaseAccounts()
+	if err != nil {
+		fmt.Printf("\nerr listing payment methods: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\ncbActs: %+v\n", cbActs)
 }
 
 func stringPtr(str string) *string {

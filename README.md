@@ -42,11 +42,11 @@ https://docs.pro.coinbase.com
 - [x] GetCurrentExchangeLimits
 - [x] Stablecoin conversions
 - [x] Payment methods
+- [x] Coinbase accounts
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
-- [ ] Coinbase accounts
 - [ ] Fees
 - [ ] Reports
 - [ ] Profiles
