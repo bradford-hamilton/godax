@@ -41,11 +41,11 @@ https://docs.pro.coinbase.com
 - [x] ListFills
 - [x] GetCurrentExchangeLimits
 - [x] Stablecoin conversions
+- [x] Payment methods
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
-- [ ] Payment methods
 - [ ] Coinbase accounts
 - [ ] Fees
 - [ ] Reports
