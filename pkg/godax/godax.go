@@ -300,7 +300,10 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 
 // StableCoinConversion creates a stablecoin conversion. One example is converting $10,000.00 USD to 10,000.00 USDC.
 // A successful conversion will be assigned a conversion id which comes back on the Conversion as ID. The corresponding
-// ledger entries for a conversion will reference this conversion id.
+// ledger entries for a conversion will reference this conversion id. Params:
+// from:	A valid currency id
+// to:		A valid currency id
+// amount:	Amount of from to convert to to
 func (c *Client) StableCoinConversion(from string, to string, amount string) (Conversion, error) {
 	if from == "" || to == "" || amount == "" {
 		return Conversion{}, ErrMissingConversionParams
@@ -321,4 +324,18 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	}
 
 	return c.stableCoinConversion(timestamp, sig, req)
+}
+
+// ListPaymentMethods gets a list of your payment methods.
+func (c *Client) ListPaymentMethods() ([]PaymentMethod, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/payment-methods"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.listPaymentMethods(timestamp, sig, req)
 }

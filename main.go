@@ -136,9 +136,16 @@ func main() {
 
 	conv, err := client.StableCoinConversion("USD", "USDC", "10")
 	if err != nil {
-		fmt.Printf("err converting coins")
+		fmt.Printf("\nerr converting coins: %+v\n", err)
 	}
 	fmt.Printf("\nconv: %+v \n", conv)
+
+	pms, err := client.ListPaymentMethods()
+	if err != nil {
+		fmt.Printf("\nerr listing payment methods: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\npms: %+v\n", pms)
 }
 
 func stringPtr(str string) *string {
