@@ -150,7 +150,6 @@ type AccountHold struct {
 }
 
 // CoinbaseAccount represents a Coinbase (non-pro) account.
-
 /*
 [
     {
