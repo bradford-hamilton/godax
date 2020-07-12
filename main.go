@@ -133,6 +133,12 @@ func main() {
 	}
 
 	fmt.Printf("\nlimits: %+v\n", limits)
+
+	conv, err := client.StableCoinConversion("USD", "USDC", "10")
+	if err != nil {
+		fmt.Printf("err converting coins")
+	}
+	fmt.Printf("\nconv: %+v \n", conv)
 }
 
 func stringPtr(str string) *string {

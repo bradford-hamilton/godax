@@ -122,7 +122,7 @@ type MarketOrderParams struct {
 }
 
 // placeOrder allows you to place two types of orders: limit and market
-func (c *Client) placeOrder(timestamp, signature string, req *http.Request, body []byte) (Order, error) {
+func (c *Client) placeOrder(timestamp, signature string, req *http.Request) (Order, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return Order{}, err

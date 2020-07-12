@@ -36,7 +36,10 @@ var noBody = []byte{}
 type QueryParams map[Param]string
 
 // ErrMissingOrderOrProductID TODO: does this feel weird and one offy right now?
-var ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
+var (
+	ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
+	ErrMissingConversionParams = errors.New("please provide all of the following params: to, from, amount")
+)
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.
 func NewClient() (*Client, error) {
@@ -141,7 +144,7 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 		return Order{}, err
 	}
 
-	return c.placeOrder(timestamp, sig, req, body)
+	return c.placeOrder(timestamp, sig, req)
 }
 
 // CancelOrderByID cancels a previously placed order. Order must belong to the profile that
@@ -266,13 +269,12 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 // is inserted into our datastore. Once the fill is recorded, a settlement process will settle the fill and credit
 // both trading counterparties. The fee field indicates the fees charged for this individual fill.
 func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
-	timestamp := unixTime()
-	method := http.MethodGet
-	path := "/fills"
-
 	if qp[ProductID] == "" && qp[OrderID] == "" {
 		return nil, ErrMissingOrderOrProductID
 	}
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/fills"
 
 	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
@@ -294,4 +296,29 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 	}
 
 	return c.getLimits(timestamp, sig, req)
+}
+
+// StableCoinConversion creates a stablecoin conversion. One example is converting $10,000.00 USD to 10,000.00 USDC.
+// A successful conversion will be assigned a conversion id which comes back on the Conversion as ID. The corresponding
+// ledger entries for a conversion will reference this conversion id.
+func (c *Client) StableCoinConversion(from string, to string, amount string) (Conversion, error) {
+	if from == "" || to == "" || amount == "" {
+		return Conversion{}, ErrMissingConversionParams
+	}
+	conv := conversionReq{From: from, To: to, Amount: amount}
+	timestamp := unixTime()
+	method := http.MethodPost
+	path := "/conversions"
+
+	body, err := json.Marshal(conv)
+	if err != nil {
+		return Conversion{}, err
+	}
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
+	if err != nil {
+		return Conversion{}, err
+	}
+
+	return c.stableCoinConversion(timestamp, sig, req)
 }

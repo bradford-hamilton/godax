@@ -40,11 +40,11 @@ https://docs.pro.coinbase.com
 - [x] GetOrderByClientOID
 - [x] ListFills
 - [x] GetCurrentExchangeLimits
+- [x] Stablecoin conversions
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
-- [ ] Stablecoin conversions
 - [ ] Payment methods
 - [ ] Coinbase accounts
 - [ ] Fees
