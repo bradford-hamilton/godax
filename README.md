@@ -20,15 +20,52 @@
 <br />
 <br />
 
-## godax is a coinbase pro client
+Coinbase pro client WIP.
+___
 
-This is currently a WIP.
+Docs:
+https://docs.pro.coinbase.com
 
-## testing
+## Features:
+- [x] ListAccounts
+- [x] GetAccount
+- [x] GetAccountHistory
+- [x] GetAccountHolds
+- [x] PlaceOrder
+- [x] CancelOrderByID
+- [x] CancelOrderByClientOID
+- [x] CancelAllOrders
+- [x] ListOrders
+- [x] GetOrderByID
+- [x] GetOrderByClientOID
+- [x] ListFills
+- [x] GetCurrentExchangeLimits
+
+## Still needs:
+- [ ] Deposits
+- [ ] Withdrawals
+- [ ] Stablecoin conversions
+- [ ] Payment methods
+- [ ] Coinbase accounts
+- [ ] Fees
+- [ ] Reports
+- [ ] Profiles
+- [ ] User account
+- [ ] Margin
+- [ ] Oracle
+- [ ] Market Data: products
+- [ ] Market Data: currency
+- [ ] Market Data: time
+- [ ] WS feed and it's channels
+
+## Testing
+```
+go test ./...
+```
+Or with a bit of color
 ```
 make test
 ```
-This runs tests with a little bit of color output.
 
 ## Show your support
 
