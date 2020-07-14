@@ -354,3 +354,18 @@ func (c *Client) ListCoinbaseAccounts() ([]CoinbaseAccount, error) {
 
 	return c.listCoinbaseAccounts(timestamp, sig, req)
 }
+
+// GetCurrentFees returns your current maker & taker fee rates, as well as your 30-day trailing volume.
+// Quoted rates are subject to change.
+func (c *Client) GetCurrentFees() (Fees, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/fees"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return Fees{}, err
+	}
+
+	return c.getCurrentFees(timestamp, sig, req)
+}

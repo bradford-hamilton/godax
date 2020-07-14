@@ -153,6 +153,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\ncbActs: %+v\n", cbActs)
+
+	fees, err := client.GetCurrentFees()
+	if err != nil {
+		fmt.Printf("\nerr getting current fees: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nfees: %+v\n", fees)
 }
 
 func stringPtr(str string) *string {

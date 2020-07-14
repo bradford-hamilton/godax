@@ -43,11 +43,11 @@ https://docs.pro.coinbase.com
 - [x] Stablecoin conversions
 - [x] Payment methods
 - [x] Coinbase accounts
+- [x] Fees
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
-- [ ] Fees
 - [ ] Reports
 - [ ] Profiles
 - [ ] User account
