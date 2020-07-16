@@ -160,6 +160,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nfees: %+v\n", fees)
+
+	v, err := client.GetTrailingVolume()
+	if err != nil {
+		fmt.Printf("\nerr getting trailing volume: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nuser accounts: %+v\n", v)
 }
 
 func stringPtr(str string) *string {

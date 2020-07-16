@@ -44,13 +44,13 @@ https://docs.pro.coinbase.com
 - [x] Payment methods
 - [x] Coinbase accounts
 - [x] Fees
+- [x] User account
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
 - [ ] Reports
 - [ ] Profiles
-- [ ] User account
 - [ ] Margin
 - [ ] Oracle
 - [ ] Market Data: products

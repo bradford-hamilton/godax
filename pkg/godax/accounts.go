@@ -274,6 +274,30 @@ type BankCountry struct {
 	Name string `json:"name"`
 }
 
+// UserAccount is used for fetching trailing volumes for your user
+/*
+[
+    {
+        "product_id": "BTC-USD",
+        "exchange_volume": "11800.00000000",
+        "volume": "100.00000000",
+        "recorded_at": "1973-11-29T00:05:01.123456Z"
+    },
+    {
+        "product_id": "LTC-USD",
+        "exchange_volume": "51010.04100000",
+        "volume": "2010.04100000",
+        "recorded_at": "1973-11-29T00:05:02.123456Z"
+    }
+]
+*/
+type UserAccount struct {
+	ProductID      string `json:"product_id"`
+	ExchangeVolume string `json:"exchange_volume"`
+	Volume         string `json:"volume"`
+	RecordedAt     string `json:"recorded_at"`
+}
+
 // listAccounts gets a list of trading accounts from the profile associated with the API key.
 func (c *Client) listAccounts(timestamp, signature string, req *http.Request) ([]ListAccount, error) {
 	res, err := c.do(timestamp, signature, req)
@@ -347,4 +371,19 @@ func (c *Client) listCoinbaseAccounts(timestamp, signature string, req *http.Req
 		return []CoinbaseAccount{}, err
 	}
 	return cbAccounts, nil
+}
+
+// getTrailingVolume returns your 30-day trailing volume for all products of the API key's profile.
+func (c *Client) getTrailingVolume(timestamp, signature string, req *http.Request) ([]UserAccount, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return []UserAccount{}, err
+	}
+	defer res.Body.Close()
+
+	var userActs []UserAccount
+	if err := json.NewDecoder(res.Body).Decode(&userActs); err != nil {
+		return []UserAccount{}, err
+	}
+	return userActs, nil
 }
