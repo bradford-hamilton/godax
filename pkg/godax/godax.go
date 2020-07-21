@@ -385,3 +385,18 @@ func (c *Client) GetTrailingVolume() ([]UserAccount, error) {
 
 	return c.getTrailingVolume(timestamp, sig, req)
 }
+
+// ListProfiles lists the api key user's profiles which are equivilant to portfolios.
+// This endpoint requires the "view" permission and is accessible by any profile's API key.
+func (c *Client) ListProfiles() ([]Profile, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/profiles"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.listProfiles(timestamp, sig, req)
+}

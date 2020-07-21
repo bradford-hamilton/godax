@@ -167,6 +167,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nuser accounts: %+v\n", v)
+
+	profiles, err := client.ListProfiles()
+	if err != nil {
+		fmt.Printf("\nerr listing profiles: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nprofiles: %+v\n", profiles)
 }
 
 func stringPtr(str string) *string {

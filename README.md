@@ -45,12 +45,12 @@ https://docs.pro.coinbase.com
 - [x] Coinbase accounts
 - [x] Fees
 - [x] User account
+- [partial] Profiles
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
 - [ ] Reports
-- [ ] Profiles
 - [ ] Margin
 - [ ] Oracle
 - [ ] Market Data: products
