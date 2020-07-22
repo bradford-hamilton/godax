@@ -415,3 +415,23 @@ func (c *Client) GetProfile(profileID string) (Profile, error) {
 
 	return c.getProfile(timestamp, sig, req)
 }
+
+// ProfileTransfer transfers funds from API key's profile to another user owned profile.
+// This endpoint requires the "transfer" permission.
+func (c *Client) ProfileTransfer(transfer TransferParams) error {
+	timestamp := unixTime()
+	method := http.MethodPost
+	path := "/profiles/transfer"
+
+	body, err := json.Marshal(transfer)
+	if err != nil {
+		return err
+	}
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.profileTransfer(timestamp, sig, req)
+}

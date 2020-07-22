@@ -181,6 +181,15 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nprofile: %+v\n", profile)
+
+	if err := client.ProfileTransfer(godax.TransferParams{
+		From:     profiles[0].ID,
+		To:       profiles[1].ID,
+		Currency: "BTC-USD",
+		Amount:   "0.05",
+	}); err != nil {
+		fmt.Println("err transferring profile:", err)
+	}
 }
 
 func stringPtr(str string) *string {

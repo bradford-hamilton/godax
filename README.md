@@ -45,7 +45,7 @@ https://docs.pro.coinbase.com
 - [x] Coinbase accounts
 - [x] Fees
 - [x] User account
-- [partial] Profiles
+- [x] Profiles
 
 ## Still needs:
 - [ ] Deposits
