@@ -191,7 +191,3 @@ func main() {
 		fmt.Println("err transferring profile:", err)
 	}
 }
-
-func stringPtr(str string) *string {
-	return &str
-}
