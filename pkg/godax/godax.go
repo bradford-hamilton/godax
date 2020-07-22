@@ -400,3 +400,18 @@ func (c *Client) ListProfiles() ([]Profile, error) {
 
 	return c.listProfiles(timestamp, sig, req)
 }
+
+// GetProfile gets a single profile by profile id. This endpoint requires the "view" permission
+// and is accessible by any profile's API key.
+func (c *Client) GetProfile(profileID string) (Profile, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/profiles/" + profileID
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return Profile{}, err
+	}
+
+	return c.getProfile(timestamp, sig, req)
+}

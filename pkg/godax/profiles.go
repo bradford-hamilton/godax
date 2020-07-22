@@ -38,3 +38,17 @@ func (c *Client) listProfiles(timestamp, signature string, req *http.Request) ([
 	}
 	return profiles, nil
 }
+
+func (c *Client) getProfile(timestamp, signature string, req *http.Request) (Profile, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return Profile{}, err
+	}
+	defer res.Body.Close()
+
+	var p Profile
+	if err := json.NewDecoder(res.Body).Decode(&p); err != nil {
+		return Profile{}, err
+	}
+	return p, nil
+}

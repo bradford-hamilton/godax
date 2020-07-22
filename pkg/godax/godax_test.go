@@ -1842,10 +1842,79 @@ func TestClient_ListProfiles(t *testing.T) {
 				return
 			}
 
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
 			validateHeaders(t, c)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.ListProfiles() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_GetProfile(t *testing.T) {
+	type args struct {
+		profileID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    Profile
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful call is made to get a profile by ID",
+			fields: defaultFields(),
+			want: Profile{
+				ID:        "86602c68-306a-4500-ac73-4ce56a91d83c",
+				UserID:    "5844eceecf7e803e259d0365",
+				Name:      "default",
+				Active:    true,
+				IsDefault: true,
+				CreatedAt: "2019-11-18T15:08:40.236309Z",
+			},
+			wantRaw: `{
+				"id": "86602c68-306a-4500-ac73-4ce56a91d83c",
+				"user_id": "5844eceecf7e803e259d0365",
+				"name": "default",
+				"active": true,
+				"is_default": true,
+				"created_at": "2019-11-18T15:08:40.236309Z"
+			}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetProfile(tt.args.profileID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetProfile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetProfile() = %v, want %v", got, tt.want)
 			}
 		})
 	}

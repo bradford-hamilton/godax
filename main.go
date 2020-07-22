@@ -174,6 +174,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nprofiles: %+v\n", profiles)
+
+	profile, err := client.GetProfile(profiles[0].ID)
+	if err != nil {
+		fmt.Printf("\nerr getting profile: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nprofile: %+v\n", profile)
 }
 
 func stringPtr(str string) *string {
