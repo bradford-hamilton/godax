@@ -8,8 +8,9 @@ import (
 )
 
 // NOTE:
-// This is a dumping ground for testing godax until it's more complete.
-// Godax lives at "github.com/bradford-hamilton/godax/pkg/godax"
+// This is a dumping ground for testing godax along the way until it's complete.
+// The code lives in "/pkg/godax"
+// TODO: consider moving everything under a "v1" dir
 
 func main() {
 	client, err := godax.NewSandboxClient()

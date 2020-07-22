@@ -23,7 +23,7 @@ type Client struct {
 // query params as constants, but also if you need to - you can create your own Param to use.
 type Param string
 
-// Available query params for all coinbase pro calls
+// Available query params
 const (
 	OrderID   Param = "order_id"
 	ProductID Param = "product_id"

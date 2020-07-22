@@ -20,7 +20,7 @@
 <br />
 <br />
 
-Coinbase pro client WIP.
+Godax is an (unofficial) Coinbase Pro client. It is currently a work in progress and I've listed the remaining work needed for completion of their API. Generally speaking it could use some more tests, as most are not testing any of the error paths.
 ___
 
 Docs:
@@ -57,6 +57,14 @@ https://docs.pro.coinbase.com
 - [ ] Market Data: currency
 - [ ] Market Data: time
 - [ ] WS feed and it's channels
+
+## Development
+Set the following environment variables which can point to either a live or sandbox coinbase pro account:
+```
+COINBASE_PRO_KEY=
+COINBASE_PRO_SECRET=
+COINBASE_PRO_PASSPHRASE=
+```
 
 ## Testing
 ```
