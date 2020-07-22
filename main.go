@@ -183,12 +183,20 @@ func main() {
 	}
 	fmt.Printf("\nprofile: %+v\n", profile)
 
-	if err := client.ProfileTransfer(godax.TransferParams{
-		From:     profiles[0].ID,
-		To:       profiles[1].ID,
-		Currency: "BTC-USD",
-		Amount:   "0.05",
-	}); err != nil {
-		fmt.Println("err transferring profile:", err)
+	// if err := client.ProfileTransfer(godax.TransferParams{
+	// 	From:     profiles[0].ID,
+	// 	To:       profiles[1].ID,
+	// 	Currency: "BTC-USD",
+	// 	Amount:   "0.05",
+	// }); err != nil {
+	// 	fmt.Println("err transferring profile:", err)
+	// 	os.Exit(1)
+	// }
+
+	products, err := client.ListProducts()
+	if err != nil {
+		fmt.Printf("\nerr getting profile: %+v\n", err)
+		os.Exit(1)
 	}
+	fmt.Printf("products: %+v", products)
 }

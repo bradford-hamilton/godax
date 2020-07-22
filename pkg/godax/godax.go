@@ -435,3 +435,19 @@ func (c *Client) ProfileTransfer(transfer TransferParams) error {
 
 	return c.profileTransfer(timestamp, sig, req)
 }
+
+// ListProducts gets a list of available currency pairs for trading. The Market Data API is an
+// unauthenticated set of endpoints for retrieving market data. These endpoints provide snapshots
+// of market data.
+func (c *Client) ListProducts() ([]Product, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.listProducts(timestamp, sig, req)
+}

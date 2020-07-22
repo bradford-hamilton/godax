@@ -46,6 +46,7 @@ https://docs.pro.coinbase.com
 - [x] Fees
 - [x] User account
 - [x] Profiles
+- [partial] Market Data: products
 
 ## Still needs:
 - [ ] Deposits
@@ -53,7 +54,6 @@ https://docs.pro.coinbase.com
 - [ ] Reports
 - [ ] Margin
 - [ ] Oracle
-- [ ] Market Data: products
 - [ ] Market Data: currency
 - [ ] Market Data: time
 - [ ] WS feed and it's channels
