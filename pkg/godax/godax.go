@@ -451,3 +451,17 @@ func (c *Client) ListProducts() ([]Product, error) {
 
 	return c.listProducts(timestamp, sig, req)
 }
+
+// GetProduct gets market data for a specific currency pair.
+func (c *Client) GetProduct(productID string) (Product, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products/" + productID
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return Product{}, err
+	}
+
+	return c.getProduct(timestamp, sig, req)
+}

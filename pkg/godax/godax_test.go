@@ -1870,6 +1870,7 @@ func TestClient_GetProfile(t *testing.T) {
 		{
 			name:   "when a successful call is made to get a profile by ID",
 			fields: defaultFields(),
+			args:   args{profileID: "123abc"},
 			want: Profile{
 				ID:        "86602c68-306a-4500-ac73-4ce56a91d83c",
 				UserID:    "5844eceecf7e803e259d0365",
@@ -1973,7 +1974,7 @@ func TestClient_ProfileTransfer(t *testing.T) {
 }
 
 func TestClient_ListProducts(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		want    []Product
@@ -2084,6 +2085,93 @@ func TestClient_ListProducts(t *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.ListProducts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_GetProduct(t *testing.T) {
+	type args struct {
+		productID string
+	}
+	tests := [...]struct {
+		name    string
+		fields  fields
+		args    args
+		want    Product
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful call is made to get a profile by ID",
+			fields: defaultFields(),
+			args:   args{productID: "BTC-USD"},
+			want: Product{
+				ID:              "BAT-USDC",
+				DisplayName:     "BAT/USDC",
+				BaseCurrency:    "BAT",
+				QuoteCurrency:   "USDC",
+				BaseIncrement:   "0.00000100",
+				QuoteIncrement:  "0.00000100",
+				BaseMinSize:     "1.00000000",
+				BaseMaxSize:     "300000.00000000",
+				MinMarketFunds:  "1",
+				MaxMarketFunds:  "100000",
+				Status:          "online",
+				StatusMessage:   "",
+				CancelOnly:      false,
+				LimitOnly:       false,
+				PostOnly:        false,
+				TradingDisabled: false,
+			},
+			wantRaw: `{
+				"id":"BAT-USDC",
+				"base_currency":"BAT",
+				"quote_currency":"USDC",
+				"base_min_size":"1.00000000",
+				"base_max_size":"300000.00000000",
+				"quote_increment":"0.00000100",
+				"base_increment":"0.00000100",
+				"display_name":"BAT/USDC",
+				"min_market_funds":"1",
+				"max_market_funds":"100000",
+				"margin_enabled":false,
+				"post_only":false,
+				"limit_only":false,
+				"cancel_only":false,
+				"trading_disabled":false,
+				"status":"online",
+				"status_message":""
+			}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetProduct(tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetProduct() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetProduct() = %v, want %v", got, tt.want)
 			}
 		})
 	}

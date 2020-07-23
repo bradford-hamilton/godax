@@ -94,3 +94,17 @@ func (c *Client) listProducts(timestamp, signature string, req *http.Request) ([
 	}
 	return p, nil
 }
+
+func (c *Client) getProduct(timestamp, signature string, req *http.Request) (Product, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return Product{}, err
+	}
+	defer res.Body.Close()
+
+	var p Product
+	if err := json.NewDecoder(res.Body).Decode(&p); err != nil {
+		return Product{}, err
+	}
+	return p, nil
+}

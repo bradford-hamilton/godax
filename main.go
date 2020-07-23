@@ -198,5 +198,12 @@ func main() {
 		fmt.Printf("\nerr getting profile: %+v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("products: %+v", products)
+	fmt.Printf("\nproducts: %+v\n", products)
+
+	product, err := client.GetProduct("BTC-USD")
+	if err != nil {
+		fmt.Printf("\nerr getting product: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nproduct: %+v\n", product)
 }
