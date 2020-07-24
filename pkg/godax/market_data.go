@@ -62,6 +62,7 @@ type Product struct {
 	// MaxMarketFunds describes the maximum funds allowed in a market order
 	MaxMarketFunds string `json:"max_market_funds"`
 
+	// Status is the product's current status, example: "online"
 	Status string `json:"status"`
 
 	// StatusMessage provides any extra information regarding the status if available
@@ -81,6 +82,60 @@ type Product struct {
 	TradingDisabled bool `json:"trading_disabled"`
 }
 
+// OrderBook represents a list of orders for a product. TODO: maybe notify coinbase. The docs say sequence is a string as
+// it appears below, however it is an int.
+/*
+{
+    "sequence": "3",
+    "bids": [
+        [ price, size, num-orders ],
+        [ "295.96", "4.39088265", 2 ],
+        ...
+    ],
+    "asks": [
+        [ price, size, num-orders ],
+        [ "295.97", "25.23542881", 12 ],
+        ...
+    ]
+}
+*/
+type OrderBook struct {
+	Sequence int              `json:"sequence"`
+	Bids     []OrderBookOrder `json:"bids"`
+	Asks     []OrderBookOrder `json:"asks"`
+}
+
+// OrderBookOrder represents the price, size, and number of orders for a product.
+type OrderBookOrder struct {
+	Price     string `json:"price"`
+	Size      string `json:"size"`
+	NumOrders int    `json:"num_orders"`
+}
+
+// TODO: it seems when you ask for level 3, the shape of the bids and asks no longer apply :(
+// The NumOrders field comes back as a string UUID, and so I am not sure what that is. May reach out
+// to coinbase on this one as well.
+
+// UnmarshalJSON is a custom unmarshaller for an OrderBook. Unfortunately the coinbase pro
+// API returns different types in the bids & asks JSON arrays, so we handle that here.
+// This approach should provide us with all the standard JSON errors if something goes wrong.
+func (o *OrderBookOrder) UnmarshalJSON(b []byte) error {
+	var msg []json.RawMessage
+	if err := json.Unmarshal(b, &msg); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[0], &o.Price); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[1], &o.Size); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[2], &o.NumOrders); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Client) listProducts(timestamp, signature string, req *http.Request) ([]Product, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
@@ -95,7 +150,7 @@ func (c *Client) listProducts(timestamp, signature string, req *http.Request) ([
 	return p, nil
 }
 
-func (c *Client) getProduct(timestamp, signature string, req *http.Request) (Product, error) {
+func (c *Client) getProductByID(timestamp, signature string, req *http.Request) (Product, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return Product{}, err
@@ -107,4 +162,18 @@ func (c *Client) getProduct(timestamp, signature string, req *http.Request) (Pro
 		return Product{}, err
 	}
 	return p, nil
+}
+
+func (c *Client) getProductOrderBook(timestamp, signature string, req *http.Request) (OrderBook, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return OrderBook{}, err
+	}
+	defer res.Body.Close()
+
+	var ob OrderBook
+	if err := json.NewDecoder(res.Body).Decode(&ob); err != nil {
+		return OrderBook{}, err
+	}
+	return ob, nil
 }

@@ -200,10 +200,17 @@ func main() {
 	}
 	fmt.Printf("\nproducts: %+v\n", products)
 
-	product, err := client.GetProduct("BTC-USD")
+	product, err := client.GetProductByID("BTC-USD")
 	if err != nil {
 		fmt.Printf("\nerr getting product: %+v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("\nproduct: %+v\n", product)
+
+	ob, err := client.GetProductOrderBook("BTC-USD", godax.QueryParams{godax.Level: "1"})
+	if err != nil {
+		fmt.Printf("\nerr getting product: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nob: %+v\n", ob)
 }

@@ -28,6 +28,9 @@ const (
 	OrderID   Param = "order_id"
 	ProductID Param = "product_id"
 	Status    Param = "status"
+
+	// Level is used when calling GetProductOrderBook
+	Level Param = "level"
 )
 
 var noBody = []byte{}
@@ -452,8 +455,8 @@ func (c *Client) ListProducts() ([]Product, error) {
 	return c.listProducts(timestamp, sig, req)
 }
 
-// GetProduct gets market data for a specific currency pair.
-func (c *Client) GetProduct(productID string) (Product, error) {
+// GetProductByID gets market data for a specific currency pair.
+func (c *Client) GetProductByID(productID string) (Product, error) {
 	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID
@@ -463,5 +466,34 @@ func (c *Client) GetProduct(productID string) (Product, error) {
 		return Product{}, err
 	}
 
-	return c.getProduct(timestamp, sig, req)
+	return c.getProductByID(timestamp, sig, req)
+}
+
+// GetProductOrderBook gets a list of open orders for a product. The amount of detail shown can
+// be customized with the level parameter. By default, only the inside (i.e. best) bid and ask
+// are returned. This is equivalent to a book depth of 1 level. If you would like to see a
+// larger order book, specify the level query parameter. If a level is not aggregated, then
+// all of the orders at each price will be returned. Aggregated levels return only one size
+// for each active price (as if there was only a single order for that size at the level). You
+// can provide the "level" query param here which defaults to "1" if you do not specify.
+// Level 	Description
+// 1	 	Only the best bid and ask
+// 2	 	Top 50 bids and asks (aggregated)
+// 3	 	Full order book (non aggregated)
+// This request is NOT paginated. The entire book is returned in one response. Level 1 and
+// Level 2 are recommended for polling. For the most up-to-date data, consider using the
+// websocket stream. Level 3 is only recommended for users wishing to maintain a full real-time
+// order book using the websocket stream. Abuse of Level 3 via polling will cause your access
+// to be limited or blocked.
+func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBook, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products/" + productID + "/book"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
+	if err != nil {
+		return OrderBook{}, err
+	}
+
+	return c.getProductOrderBook(timestamp, sig, req)
 }

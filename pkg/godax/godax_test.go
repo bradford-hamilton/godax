@@ -2158,7 +2158,7 @@ func TestClient_GetProduct(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			got, err := c.GetProduct(tt.args.productID)
+			got, err := c.GetProductByID(tt.args.productID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.GetProduct() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2172,6 +2172,79 @@ func TestClient_GetProduct(t *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.GetProduct() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_GetProductOrderBook(t *testing.T) {
+	type args struct {
+		productID string
+		qp        QueryParams
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    OrderBook
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful cancel order has been made with no product ID",
+			fields: defaultFields(),
+			args:   args{qp: QueryParams{Level: "1"}},
+			want: OrderBook{
+				Sequence: 3,
+				Bids: []OrderBookOrder{{
+					Price:     "295.96",
+					Size:      "4.39088265",
+					NumOrders: 2,
+				}},
+				Asks: []OrderBookOrder{{
+					Price:     "295.97",
+					Size:      "25.23542881",
+					NumOrders: 12,
+				}},
+			},
+			wantRaw: `{
+				"sequence": 3,
+				"bids": [
+					["295.96", "4.39088265", 2]
+				],
+				"asks": [
+					["295.97", "25.23542881", 12]
+				]
+			}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetProductOrderBook(tt.args.productID, tt.args.qp)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetProductOrderBook() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetProductOrderBook() = %v, want %v", got, tt.want)
 			}
 		})
 	}
