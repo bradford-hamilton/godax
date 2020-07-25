@@ -20,7 +20,7 @@ type HTTPClient interface {
 
 // CoinbaseErrRes represents the shape that comes back when a status code is non-200
 type CoinbaseErrRes struct {
-	// Message contains the important error information from coinbase
+	// Message contains the error information from coinbase
 	Message string `json:"message"`
 }
 

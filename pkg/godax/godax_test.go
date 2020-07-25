@@ -2327,9 +2327,9 @@ func TestClient_ListTradesByProduct(t *testing.T) {
 }
 
 func TestClient_GetHistoricRatesForProduct(t *testing.T) {
-
 	type args struct {
 		productID string
+		qp        QueryParams
 	}
 	tests := []struct {
 		name    string
@@ -2342,7 +2342,7 @@ func TestClient_GetHistoricRatesForProduct(t *testing.T) {
 		{
 			name:   "when a successful call is made to get historic rates for a product",
 			fields: defaultFields(),
-			args:   args{productID: "BTC-USD"},
+			args:   args{productID: "BTC-USD", qp: QueryParams{Granularity: "60"}},
 			want: []HistoricRate{{
 				Time:   1415398768,
 				Low:    0.32,
@@ -2377,7 +2377,7 @@ func TestClient_GetHistoricRatesForProduct(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			got, err := c.GetHistoricRatesForProduct(tt.args.productID)
+			got, err := c.GetHistoricRatesForProduct(tt.args.productID, tt.args.qp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.GetHistoricRatesForProduct() error = %v, wantErr %v", err, tt.wantErr)
 				return

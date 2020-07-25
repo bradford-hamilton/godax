@@ -228,7 +228,7 @@ func main() {
 	}
 	fmt.Printf("\ntrades: %+v\n", trades)
 
-	rates, err := client.GetHistoricRatesForProduct("BTC-USD")
+	rates, err := client.GetHistoricRatesForProduct("BTC-USD", godax.QueryParams{godax.Start: "", godax.End: "", godax.Granularity: "60"})
 	if err != nil {
 		fmt.Printf("\nerr getting rates: %+v\n", err)
 		os.Exit(1)

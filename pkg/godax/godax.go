@@ -31,6 +31,11 @@ const (
 
 	// Level is used when calling GetProductOrderBook
 	Level Param = "level"
+
+	// These params are used when calling GetHistoricRatesForProduct
+	Start       Param = "start"
+	End         Param = "end"
+	Granularity Param = "granularity"
 )
 
 var noBody = []byte{}
@@ -533,12 +538,26 @@ func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
 // GetHistoricRatesForProduct gets historic rates for a product. Rates are returned in grouped
 // buckets based on requested granularity. Historical rate data may be incomplete. No data is
 // published for intervals where there are no ticks.
-func (c *Client) GetHistoricRatesForProduct(productID string) ([]HistoricRate, error) {
+// PARAMETERS
+// Param		Description
+// start		Start time in ISO 8601
+// end			End time in ISO 8601
+// granularity	Desired timeslice in seconds
+// If either one of the start or end fields are not provided then both fields will be ignored. If a custom
+// time range is not declared then one ending now is selected. The granularity field must be one of the
+// following values: {60, 300, 900, 3600, 21600, 86400}. Otherwise, your request will be rejected. These
+// values correspond to timeslices representing one minute, five minutes, fifteen minutes, one hour, six
+// hours, and one day, respectively. If data points are readily available, your response may contain as many
+// as 300 candles and some of those candles may precede your declared start value. The maximum number of data
+// points for a single request is 300 candles. If your selection of start/end time and granularity will result
+// in more than 300 data points, your request will be rejected. If you wish to retrieve fine granularity data
+// over a larger time range, you will need to make multiple requests with new start/end ranges.
+func (c *Client) GetHistoricRatesForProduct(productID string, qp QueryParams) ([]HistoricRate, error) {
 	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID + "/candles"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return nil, err
 	}
