@@ -242,10 +242,17 @@ func main() {
 	}
 	fmt.Printf("\nstats: %+v\n", stats)
 
-	currencies, err := client.GetCurrencies()
+	currencies, err := client.ListCurrencies()
 	if err != nil {
 		fmt.Printf("\nerr getting currencies: %+v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("\ncurrencies: %+v\n", currencies)
+
+	srvTime, err := client.GetServerTime()
+	if err != nil {
+		fmt.Printf("\nerr getting srvTime: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nsrvTime: %+v\n", srvTime)
 }

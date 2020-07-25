@@ -19,7 +19,7 @@ type Currency struct {
 	MinSize string `json:"min_size"`
 }
 
-func (c *Client) getCurrencies(timestamp, signature string, req *http.Request) ([]Currency, error) {
+func (c *Client) listCurrencies(timestamp, signature string, req *http.Request) ([]Currency, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
 		return nil, err

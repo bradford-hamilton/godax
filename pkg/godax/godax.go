@@ -581,13 +581,13 @@ func (c *Client) Get24HourStatsForProduct(productID string) (DayStat, error) {
 	return c.get24HourStatsForProduct(timestamp, sig, req)
 }
 
-// GetCurrencies lists known currencies. Currency codes will conform to the ISO 4217 standard where possible.
+// ListCurrencies lists known currencies. Currency codes will conform to the ISO 4217 standard where possible.
 // Currencies which have or had no representation in ISO 4217 may use a custom code.
 // Code		Description
 // BTC		Bitcoin
 // ETH		Ether
 // LTC		Litecoin
-func (c *Client) GetCurrencies() ([]Currency, error) {
+func (c *Client) ListCurrencies() ([]Currency, error) {
 	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/currencies"
@@ -597,5 +597,19 @@ func (c *Client) GetCurrencies() ([]Currency, error) {
 		return nil, err
 	}
 
-	return c.getCurrencies(timestamp, sig, req)
+	return c.listCurrencies(timestamp, sig, req)
+}
+
+// GetServerTime fetches the current coinbase pro server time. This endpoint does not require authentication.
+func (c *Client) GetServerTime() (ServerTime, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/time"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return ServerTime{}, err
+	}
+
+	return c.getServerTime(timestamp, sig, req)
 }
