@@ -184,6 +184,26 @@ type HistoricRate struct {
 	Volume float64 `json:"volume"`
 }
 
+// DayStat represents a 24 hour statistic for a product.
+/*
+{
+    "open": "6745.61000000",
+    "high": "7292.11000000",
+    "low": "6650.00000000",
+    "volume": "26185.51325269",
+    "last": "6813.19000000",
+    "volume_30day": "1019451.11188405"
+}
+*/
+type DayStat struct {
+	Open        string `json:"open"`
+	High        string `json:"high"`
+	Low         string `json:"low"`
+	Volume      string `json:"volume"`
+	Last        string `json:"last"`
+	Volume30Day string `json:"volume_30day"`
+}
+
 // UnmarshalJSON is a custom unmarshaller for a HistoricRate. These are returned from
 // coinbase pro as an array of floats. We want to give them a little bit of structure.
 func (h *HistoricRate) UnmarshalJSON(b []byte) error {
@@ -294,4 +314,18 @@ func (c *Client) getHistoricRatesForProduct(timestamp, signature string, req *ht
 		return nil, err
 	}
 	return rates, nil
+}
+
+func (c *Client) get24HourStatsForProduct(timestamp, signature string, req *http.Request) (DayStat, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return DayStat{}, err
+	}
+	defer res.Body.Close()
+
+	var d DayStat
+	if err := json.NewDecoder(res.Body).Decode(&d); err != nil {
+		return DayStat{}, err
+	}
+	return d, nil
 }

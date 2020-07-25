@@ -564,3 +564,18 @@ func (c *Client) GetHistoricRatesForProduct(productID string, qp QueryParams) ([
 
 	return c.getHistoricRatesForProduct(timestamp, sig, req)
 }
+
+// Get24HourStatsForProduct gets 24 hr stats for the product. Volume is in base currency units. Open, high,
+// low are in quote currency units.
+func (c *Client) Get24HourStatsForProduct(productID string) (DayStat, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products/" + productID + "/stats"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return DayStat{}, err
+	}
+
+	return c.get24HourStatsForProduct(timestamp, sig, req)
+}

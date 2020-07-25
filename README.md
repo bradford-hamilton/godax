@@ -46,7 +46,7 @@ https://docs.pro.coinbase.com
 - [x] Fees
 - [x] User account
 - [x] Profiles
-- [partial] Market Data: products
+- [x] Market Data: products
 
 ## Still needs:
 - [ ] Deposits

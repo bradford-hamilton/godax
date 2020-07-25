@@ -234,4 +234,11 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nrates: %+v\n", rates)
+
+	stats, err := client.Get24HourStatsForProduct("BTC-USD")
+	if err != nil {
+		fmt.Printf("\nerr getting stats: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nstats: %+v\n", stats)
 }
