@@ -133,6 +133,9 @@ func (o *OrderBookOrder) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &msg); err != nil {
 		return err
 	}
+	if len(msg) != 3 {
+		return ErrCoinbaseProAPIChange
+	}
 	if err := json.Unmarshal(msg[0], &o.Price); err != nil {
 		return err
 	}
@@ -210,6 +213,9 @@ func (h *HistoricRate) UnmarshalJSON(b []byte) error {
 	var msg []json.RawMessage
 	if err := json.Unmarshal(b, &msg); err != nil {
 		return err
+	}
+	if len(msg) != 6 {
+		return ErrCoinbaseProAPIChange
 	}
 	if err := json.Unmarshal(msg[0], &h.Time); err != nil {
 		return err

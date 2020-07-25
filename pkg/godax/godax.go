@@ -47,6 +47,7 @@ type QueryParams map[Param]string
 var (
 	ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
 	ErrMissingConversionParams = errors.New("please provide all of the following params: to, from, amount")
+	ErrCoinbaseProAPIChange    = errors.New("there appears to have been a coinbase pro API change. Please open a new issue on godax, thanks")
 )
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.
