@@ -47,8 +47,10 @@ https://docs.pro.coinbase.com
 - [x] User account
 - [x] Profiles
 - [x] Market Data: products
+- [x] Market Data: currency
 
 ## Still needs:
+- [ ] Market Data: time
 - [ ] Deposits
 - [ ] Withdrawals
 - [ ] Reports

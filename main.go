@@ -241,4 +241,11 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nstats: %+v\n", stats)
+
+	currencies, err := client.GetCurrencies()
+	if err != nil {
+		fmt.Printf("\nerr getting currencies: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\ncurrencies: %+v\n", currencies)
 }
