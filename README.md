@@ -20,7 +20,7 @@
 <br />
 <br />
 
-Godax is an (unofficial) Coinbase Pro client. It is currently a work in progress and I've listed the remaining work needed for completion of their API. Generally speaking it could use some more tests, as most are not testing any of the error paths.
+Godax is an (unofficial) Coinbase Pro client. It is currently a work in progress and I've listed the remaining work needed for completion of their API. Generally speaking it could use some more tests, as most are not testing any of the error paths. There is a growing amount of not-so-DRY code around the private http calls, however I do not currently want to refactor with interfaces. I would love to refactor using generics at some point (obv if we get them, TBD).
 ___
 
 Docs:
