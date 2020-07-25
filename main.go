@@ -209,8 +209,15 @@ func main() {
 
 	ob, err := client.GetProductOrderBook("BTC-USD", godax.QueryParams{godax.Level: "1"})
 	if err != nil {
-		fmt.Printf("\nerr getting product: %+v\n", err)
+		fmt.Printf("\nerr getting order book: %+v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("\nob: %+v\n", ob)
+
+	trades, err := client.ListTradesByProduct("BTC-USD")
+	if err != nil {
+		fmt.Printf("\nerr getting trades: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\ntrades: %+v\n", trades)
 }

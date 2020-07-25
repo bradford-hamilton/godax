@@ -2191,7 +2191,7 @@ func TestClient_GetProductOrderBook(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:   "when a successful cancel order has been made with no product ID",
+			name:   "when a successful call is made to list trades by product",
 			fields: defaultFields(),
 			args:   args{qp: QueryParams{Level: "1"}},
 			want: OrderBook{
@@ -2245,6 +2245,74 @@ func TestClient_GetProductOrderBook(t *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.GetProductOrderBook() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_ListTradesByProduct(t *testing.T) {
+	type args struct {
+		productID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []Trade
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful call is made to list trades by product",
+			fields: defaultFields(),
+			args:   args{productID: "BTC-USD"},
+			want: []Trade{{
+				Time:    "2020-07-24T22:27:41.057Z",
+				TradeID: 14990863,
+				Price:   "9562.51000000",
+				Size:    "0.00100000",
+				Side:    "sell",
+			}, {
+				Time:    "2020-08-18T22:25:40.027Z",
+				TradeID: 34923574,
+				Price:   "7645.04837465",
+				Size:    "0.00100000",
+				Side:    "sell",
+			}},
+			wantRaw: `[{
+				"time": "2020-07-24T22:27:41.057Z",
+				"trade_id":14990863,
+				"price":"9562.51000000",
+				"size":"0.00100000",
+				"side":"sell"
+			},{
+				"time": "2020-08-18T22:25:40.027Z",
+				"trade_id":34923574,
+				"price":"7645.04837465",
+				"size":"0.00100000",
+				"side":"sell"
+			}]`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+			got, err := c.ListTradesByProduct(tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.ListTradesByProduct() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.ListTradesByProduct() = %v, want %v", got, tt.want)
 			}
 		})
 	}

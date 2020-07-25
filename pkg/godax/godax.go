@@ -497,3 +497,20 @@ func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBoo
 
 	return c.getProductOrderBook(timestamp, sig, req)
 }
+
+// ListTradesByProduct lists the latest trades for a product. The trade side indicates the
+// maker order side. The maker order is the order that was open on the order book. Buy side
+// indicates a down-tick because the maker was a buy order and their order was removed.
+// Conversely, sell side indicates an up-tick.
+func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products/" + productID + "/trades"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.listTradesByProduct(timestamp, sig, req)
+}

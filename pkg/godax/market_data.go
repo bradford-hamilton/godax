@@ -112,6 +112,15 @@ type OrderBookOrder struct {
 	NumOrders int    `json:"num_orders"`
 }
 
+// Trade represents a trade that has happened for a product
+type Trade struct {
+	Time    string `json:"time"`
+	TradeID int    `json:"trade_id"`
+	Price   string `json:"price"`
+	Size    string `json:"size"`
+	Side    string `json:"side"`
+}
+
 // TODO: it seems when you ask for level 3, the shape of the bids and asks no longer apply :(
 // The NumOrders field comes back as a string UUID, and so I am not sure what that is. May reach out
 // to coinbase on this one as well.
@@ -176,4 +185,18 @@ func (c *Client) getProductOrderBook(timestamp, signature string, req *http.Requ
 		return OrderBook{}, err
 	}
 	return ob, nil
+}
+
+func (c *Client) listTradesByProduct(timestamp, signature string, req *http.Request) ([]Trade, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var trades []Trade
+	if err := json.NewDecoder(res.Body).Decode(&trades); err != nil {
+		return nil, err
+	}
+	return trades, nil
 }
