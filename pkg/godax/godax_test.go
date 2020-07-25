@@ -2306,13 +2306,91 @@ func TestClient_ListTradesByProduct(t *testing.T) {
 				passphrase:  tt.fields.passphrase,
 				httpClient:  mockClient,
 			}
+
 			got, err := c.ListTradesByProduct(tt.args.productID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.ListTradesByProduct() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Client.ListTradesByProduct() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClient_GetHistoricRatesForProduct(t *testing.T) {
+
+	type args struct {
+		productID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []HistoricRate
+		wantRaw string
+		wantErr bool
+	}{
+		{
+			name:   "when a successful call is made to get historic rates for a product",
+			fields: defaultFields(),
+			args:   args{productID: "BTC-USD"},
+			want: []HistoricRate{{
+				Time:   1415398768,
+				Low:    0.32,
+				High:   4.2,
+				Open:   0.35,
+				Close:  4.2,
+				Volume: 12.3,
+			}, {
+				Time:   1298562378,
+				Low:    0.24,
+				High:   1.9,
+				Open:   0.44,
+				Close:  8.2,
+				Volume: 15.8,
+			}},
+			wantRaw: `[
+				[1415398768, 0.32, 4.2, 0.35, 4.2, 12.3],
+				[1298562378, 0.24, 1.9, 0.44, 8.2, 15.8]
+			]`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := MockResponse(tt.wantRaw)
+
+			c := &Client{
+				baseRestURL: tt.fields.baseRestURL,
+				baseWsURL:   tt.fields.baseWsURL,
+				key:         tt.fields.key,
+				secret:      tt.fields.secret,
+				passphrase:  tt.fields.passphrase,
+				httpClient:  mockClient,
+			}
+
+			got, err := c.GetHistoricRatesForProduct(tt.args.productID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.GetHistoricRatesForProduct() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if len(c.httpClient.(*MockClient).Requests) != 1 {
+				t.Errorf("should have made one request, but made: %d", len(c.httpClient.(*MockClient).Requests))
+			}
+
+			validateHeaders(t, c)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.GetHistoricRatesForProduct() = %v, want %v", got, tt.want)
 			}
 		})
 	}

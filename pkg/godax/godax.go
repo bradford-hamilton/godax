@@ -529,3 +529,19 @@ func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
 
 	return c.listTradesByProduct(timestamp, sig, req)
 }
+
+// GetHistoricRatesForProduct gets historic rates for a product. Rates are returned in grouped
+// buckets based on requested granularity. Historical rate data may be incomplete. No data is
+// published for intervals where there are no ticks.
+func (c *Client) GetHistoricRatesForProduct(productID string) ([]HistoricRate, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products/" + productID + "/candles"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.getHistoricRatesForProduct(timestamp, sig, req)
+}

@@ -125,6 +125,26 @@ type Trade struct {
 // The NumOrders field comes back as a string UUID, and so I am not sure what that is. May reach out
 // to coinbase on this one as well.
 
+// UnmarshalJSON is a custom unmarshaller for an OrderBook. Unfortunately the coinbase pro
+// API returns different types in the bids & asks JSON arrays, so we handle that here.
+// This approach should provide us with all the standard JSON errors if something goes wrong.
+func (o *OrderBookOrder) UnmarshalJSON(b []byte) error {
+	var msg []json.RawMessage
+	if err := json.Unmarshal(b, &msg); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[0], &o.Price); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[1], &o.Size); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[2], &o.NumOrders); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Ticker represents a snapshot of a trade (tick), best bid/ask and 24h volume.
 /*
 {
@@ -147,21 +167,46 @@ type Ticker struct {
 	Time    string `json:"time"`
 }
 
-// UnmarshalJSON is a custom unmarshaller for an OrderBook. Unfortunately the coinbase pro
-// API returns different types in the bids & asks JSON arrays, so we handle that here.
-// This approach should provide us with all the standard JSON errors if something goes wrong.
-func (o *OrderBookOrder) UnmarshalJSON(b []byte) error {
+// HistoricRate represents a past rate for a product. We will marshal into
+// a struct for much more clarity/access around the data.
+/*
+[
+    [ time, low, high, open, close, volume ],
+    [ 1415398768, 0.32, 4.2, 0.35, 4.2, 12.3 ],
+]
+*/
+type HistoricRate struct {
+	Time   float64 `json:"time"`
+	Low    float64 `json:"low"`
+	High   float64 `json:"high"`
+	Open   float64 `json:"open"`
+	Close  float64 `json:"close"`
+	Volume float64 `json:"volume"`
+}
+
+// UnmarshalJSON is a custom unmarshaller for a HistoricRate. These are returned from
+// coinbase pro as an array of floats. We want to give them a little bit of structure.
+func (h *HistoricRate) UnmarshalJSON(b []byte) error {
 	var msg []json.RawMessage
 	if err := json.Unmarshal(b, &msg); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(msg[0], &o.Price); err != nil {
+	if err := json.Unmarshal(msg[0], &h.Time); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(msg[1], &o.Size); err != nil {
+	if err := json.Unmarshal(msg[1], &h.Low); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(msg[2], &o.NumOrders); err != nil {
+	if err := json.Unmarshal(msg[2], &h.High); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[3], &h.Open); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[4], &h.Close); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(msg[5], &h.Volume); err != nil {
 		return err
 	}
 	return nil
@@ -235,4 +280,18 @@ func (c *Client) getProductTicker(timestamp, signature string, req *http.Request
 		return Ticker{}, err
 	}
 	return t, nil
+}
+
+func (c *Client) getHistoricRatesForProduct(timestamp, signature string, req *http.Request) ([]HistoricRate, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var rates []HistoricRate
+	if err := json.NewDecoder(res.Body).Decode(&rates); err != nil {
+		return nil, err
+	}
+	return rates, nil
 }
