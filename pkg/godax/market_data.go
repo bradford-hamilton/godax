@@ -125,6 +125,28 @@ type Trade struct {
 // The NumOrders field comes back as a string UUID, and so I am not sure what that is. May reach out
 // to coinbase on this one as well.
 
+// Ticker represents a snapshot of a trade (tick), best bid/ask and 24h volume.
+/*
+{
+  "trade_id": 4729088,
+  "price": "333.99",
+  "size": "0.193",
+  "bid": "333.98",
+  "ask": "333.99",
+  "volume": "5957.11914015",
+  "time": "2015-11-14T20:46:03.511254Z"
+}
+*/
+type Ticker struct {
+	TradeID int    `json:"trade_id"`
+	Price   string `json:"price"`
+	Size    string `json:"size"`
+	Bid     string `json:"bid"`
+	Ask     string `json:"ask"`
+	Volume  string `json:"volume"`
+	Time    string `json:"time"`
+}
+
 // UnmarshalJSON is a custom unmarshaller for an OrderBook. Unfortunately the coinbase pro
 // API returns different types in the bids & asks JSON arrays, so we handle that here.
 // This approach should provide us with all the standard JSON errors if something goes wrong.
@@ -199,4 +221,18 @@ func (c *Client) listTradesByProduct(timestamp, signature string, req *http.Requ
 		return nil, err
 	}
 	return trades, nil
+}
+
+func (c *Client) getProductTicker(timestamp, signature string, req *http.Request) (Ticker, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return Ticker{}, err
+	}
+	defer res.Body.Close()
+
+	var t Ticker
+	if err := json.NewDecoder(res.Body).Decode(&t); err != nil {
+		return Ticker{}, err
+	}
+	return t, nil
 }

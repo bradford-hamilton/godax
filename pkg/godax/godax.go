@@ -498,6 +498,21 @@ func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBoo
 	return c.getProductOrderBook(timestamp, sig, req)
 }
 
+// GetProductTicker returns snapshot information about the last trade (tick), best bid/ask and 24h volume.
+// Polling is discouraged in favor of connecting via the websocket stream and listening for match messages.
+func (c *Client) GetProductTicker(productID string) (Ticker, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/products/" + productID + "/ticker"
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return Ticker{}, err
+	}
+
+	return c.getProductTicker(timestamp, sig, req)
+}
+
 // ListTradesByProduct lists the latest trades for a product. The trade side indicates the
 // maker order side. The maker order is the order that was open on the order book. Buy side
 // indicates a down-tick because the maker was a buy order and their order was removed.

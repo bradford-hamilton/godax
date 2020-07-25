@@ -214,6 +214,13 @@ func main() {
 	}
 	fmt.Printf("\nob: %+v\n", ob)
 
+	ticker, err := client.GetProductTicker("BTC-USD")
+	if err != nil {
+		fmt.Printf("\nerr getting ticker: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nticker: %+v\n", ticker)
+
 	trades, err := client.ListTradesByProduct("BTC-USD")
 	if err != nil {
 		fmt.Printf("\nerr getting trades: %+v\n", err)
