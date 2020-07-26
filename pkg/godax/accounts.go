@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// ListAccount represents a trading account for a coinbase pro profile.
+// ListAccount represents a trading account for a coinbase pro profile
 /*
 	{
 		"id": "71452118-efc7-4cc4-8780-a5e22d4baa53",
@@ -14,6 +14,7 @@ import (
 		"available": "0.0000000000000000",
 		"hold": "0.0000000000000000",
 		"profile_id": "75da88c5-05bf-4f54-bc85-5c775bd68254"
+
 	}
 */
 type ListAccount struct {
