@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// FIXME: fees_test.go
 func TestClient_GetCurrentFees(t *testing.T) {
 	tests := [...]struct {
 		name    string

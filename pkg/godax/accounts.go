@@ -102,7 +102,7 @@ type AccountActivity struct {
 	Details ActivityDetail `json:"details"`
 }
 
-// ActivityDetail describes important activity metadata (order, trade, and product IDs)
+// ActivityDetail describes important activity metadata (order, trade, and product IDs).
 type ActivityDetail struct {
 	// OrderID - the order ID related to the activity
 	OrderID string `json:"order_id"`
@@ -114,17 +114,17 @@ type ActivityDetail struct {
 	ProductID string `json:"product_id"`
 }
 
-// AccountHold ...
+// AccountHold describes a hold on your coinbase pro account.
 /*
-	{
-        "id": "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
-        "account_id": "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
-        "created_at": "2014-11-06T10:34:47.123456Z",
-        "updated_at": "2014-11-06T10:40:47.123456Z",
-        "amount": "4.23",
-        "type": "order",
-        "ref": "0a205de4-dd35-4370-a285-fe8fc375a273",
-    }
+{
+	"id": "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
+	"account_id": "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
+	"created_at": "2014-11-06T10:34:47.123456Z",
+	"updated_at": "2014-11-06T10:40:47.123456Z",
+	"amount": "4.23",
+	"type": "order",
+	"ref": "0a205de4-dd35-4370-a285-fe8fc375a273",
+}
 */
 type AccountHold struct {
 	// ID - the hold ID
@@ -266,12 +266,12 @@ type UKDepositInfo struct {
 	Reference     string `json:"reference"`
 }
 
-// BankCountry represents a bank country object in a WireDepositInfo
+// BankCountry represents a bank country object in a WireDepositInfo.
 type BankCountry struct {
-	// Code defines the country code
+	// Code defines the country code.
 	Code string `json:"code"`
 
-	// Name defines the country name
+	// Name defines the country name.
 	Name string `json:"name"`
 }
 
@@ -299,7 +299,6 @@ type UserAccount struct {
 	RecordedAt     string `json:"recorded_at"`
 }
 
-// listAccounts gets a list of trading accounts from the profile associated with the API key.
 func (c *Client) listAccounts(timestamp, signature string, req *http.Request) ([]ListAccount, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
@@ -314,7 +313,6 @@ func (c *Client) listAccounts(timestamp, signature string, req *http.Request) ([
 	return accounts, nil
 }
 
-// getAccount retrieves information for a single account.
 func (c *Client) getAccount(timestamp, signature string, req *http.Request) (Account, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
@@ -329,7 +327,6 @@ func (c *Client) getAccount(timestamp, signature string, req *http.Request) (Acc
 	return account, nil
 }
 
-// getAccountHistory lists account activity of the API key's profile
 func (c *Client) getAccountHistory(timestamp, signature string, req *http.Request) ([]AccountActivity, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
@@ -344,7 +341,6 @@ func (c *Client) getAccountHistory(timestamp, signature string, req *http.Reques
 	return activities, nil
 }
 
-// getAccountHolds lists holds of an account that belong to the same profile as the API key
 func (c *Client) getAccountHolds(timestamp, signature string, req *http.Request) ([]AccountHold, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
@@ -359,7 +355,6 @@ func (c *Client) getAccountHolds(timestamp, signature string, req *http.Request)
 	return holds, nil
 }
 
-// listCoinbaseAccounts gets a list of trading accounts from the profile associated with the API key.
 func (c *Client) listCoinbaseAccounts(timestamp, signature string, req *http.Request) ([]CoinbaseAccount, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
@@ -374,7 +369,6 @@ func (c *Client) listCoinbaseAccounts(timestamp, signature string, req *http.Req
 	return cbAccounts, nil
 }
 
-// getTrailingVolume returns your 30-day trailing volume for all products of the API key's profile.
 func (c *Client) getTrailingVolume(timestamp, signature string, req *http.Request) ([]UserAccount, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {

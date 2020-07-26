@@ -5,9 +5,6 @@ import (
 	"testing"
 )
 
-// TODO test utils
-
-// FIXME: conversions_test.go
 func TestClient_StableCoinConversion(t *testing.T) {
 	type args struct {
 		from   string

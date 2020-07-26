@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-// TODO: test utils
-
 func TestClient_ListAccounts(t *testing.T) {
 	tests := [...]struct {
 		name    string
@@ -434,7 +432,6 @@ func TestClient_GetAccountHolds(t *testing.T) {
 	}
 }
 
-// TODO: accounts_test.go ???
 func TestClient_ListCoinbaseAccounts(t *testing.T) {
 	tests := [...]struct {
 		name    string

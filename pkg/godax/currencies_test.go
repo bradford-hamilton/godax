@@ -5,9 +5,8 @@ import (
 	"testing"
 )
 
-// FIXME: currencies_test.go
 func TestClient_ListCurrencies(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		want    []Currency

@@ -5,9 +5,8 @@ import (
 	"testing"
 )
 
-// FIXME: time_test.go ???
 func TestClient_GetServerTime(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		want    ServerTime

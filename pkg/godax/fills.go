@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Fill represents a filled order on coinbase
+// Fill represents a filled order on coinbase.
 /*
 {
     "trade_id": 74,

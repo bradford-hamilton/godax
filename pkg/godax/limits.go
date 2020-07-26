@@ -34,7 +34,7 @@ type ExchangeLimit struct {
 	TransferLimits TransferLimits `json:"transfer_limits"`
 }
 
-// TransferLimits represents info about your payment method transfer limits, as well as buy/sell limits per currency
+// TransferLimits represents info about your payment method transfer limits, as well as buy/sell limits per currency.
 type TransferLimits struct {
 	Ach                  map[string]Limit `json:"ach"`
 	AchNoBalance         map[string]Limit `json:"ach_no_balance"`
@@ -51,10 +51,12 @@ type TransferLimits struct {
 
 // Limit represents the actual limit metadata per currency
 /*
-"BAT": {
-  "max": "212677.90003268",
-  "remaining": "212677.90003268",
-  "period_in_days": 7
+{
+	"BAT": {
+		"max": "212677.90003268",
+		"remaining": "212677.90003268",
+		"period_in_days": 7
+	}
 }
 */
 type Limit struct {
@@ -70,7 +72,6 @@ type Limit struct {
 	// PeriodInDays int `json:"period_in_days"`
 }
 
-// getLimits retrieves information for a single account.
 func (c *Client) getLimits(timestamp, signature string, req *http.Request) (ExchangeLimit, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {

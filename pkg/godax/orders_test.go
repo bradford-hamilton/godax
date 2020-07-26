@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-// TODO: test utils
-
 func TestClient_PlaceOrder(t *testing.T) {
 	type args struct {
 		order OrderParams

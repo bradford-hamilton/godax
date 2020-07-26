@@ -214,7 +214,7 @@ func TestClient_GetProductOrderBook(t *testing.T) {
 		productID string
 		qp        QueryParams
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -286,7 +286,7 @@ func TestClient_ListTradesByProduct(t *testing.T) {
 	type args struct {
 		productID string
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -363,7 +363,7 @@ func TestClient_GetHistoricRatesForProduct(t *testing.T) {
 		productID string
 		qp        QueryParams
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
@@ -432,7 +432,7 @@ func TestClient_Get24HourStatsForProduct(t *testing.T) {
 	type args struct {
 		productID string
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args

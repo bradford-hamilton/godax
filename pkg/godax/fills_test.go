@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// TODO: figure file
 func TestClient_ListFills(t *testing.T) {
 	orderID := "d50ec984-77a8-460a-b958-66f114b0de9b"
 	productID := "BTC-USD"

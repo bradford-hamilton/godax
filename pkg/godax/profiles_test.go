@@ -70,7 +70,7 @@ func TestClient_GetProfile(t *testing.T) {
 	type args struct {
 		profileID string
 	}
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		args    args
