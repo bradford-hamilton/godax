@@ -613,3 +613,29 @@ func (c *Client) GetServerTime() (ServerTime, error) {
 
 	return c.getServerTime(timestamp, sig, req)
 }
+
+// CreateReport creates reports that provide batches of historic information about your
+// profile in various human and machine readable forms. This endpoint requires either
+// the "view" or "trade" permission. The report will be generated when resources are
+// available. Report status can be queried via the /reports/:report_id endpoint. The
+// file_url field will be available once the report has successfully been created and
+// is available for download. Expired reports: reports are only available for download
+// for a few days after being created. Once a report expires, the report is no longer
+// available for download and is deleted.
+func (c *Client) CreateReport(report ReportParams) (Report, error) {
+	timestamp := unixTime()
+	method := http.MethodPost
+	path := "/reports"
+
+	body, err := json.Marshal(report)
+	if err != nil {
+		return Report{}, err
+	}
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
+	if err != nil {
+		return Report{}, err
+	}
+
+	return c.createReport(timestamp, sig, req)
+}

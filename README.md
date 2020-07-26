@@ -49,15 +49,13 @@ https://docs.pro.coinbase.com
 - [x] Market Data: products
 - [x] Market Data: currency
 - [x] Market Data: time
+- [partial] Reports
 
 ## Still needs:
 - [ ] Deposits
 - [ ] Withdrawals
-- [ ] Reports
 - [ ] Margin
 - [ ] Oracle
-- [ ] Market Data: currency
-- [ ] Market Data: time
 - [ ] WS feed and it's channels
 
 ## Development

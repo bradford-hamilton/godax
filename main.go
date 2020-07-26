@@ -255,4 +255,17 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nsrvTime: %+v\n", srvTime)
+
+	report, err := client.CreateReport(godax.ReportParams{
+		Type:      "account",
+		StartDate: "2020-03-01T00:00:00.000Z",
+		EndDate:   "2020-07-26T00:00:00.000Z",
+		AccountID: "f1f2404a-7de7-4cf6-81f9-5cb0256c8cea",
+		Email:     "brad.lamson@gmail.com",
+	})
+	if err != nil {
+		fmt.Printf("\nerr getting report: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nreport: %+v\n", report)
 }
