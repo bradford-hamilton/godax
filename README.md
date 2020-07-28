@@ -20,7 +20,7 @@
 <br />
 <br />
 
-Godax is an (unofficial) Coinbase Pro client. It is currently a work in progress and I've listed the remaining work needed for completion of their API. Generally speaking it could use some more tests, as most are not testing any of the error paths. There is a growing amount of not-so-DRY code around the private http calls, however I do not currently want to refactor with interfaces. I would love to refactor using generics at some point (obv if we get them, TBD).
+Godax is an (unofficial) Coinbase Pro client. It is a work in progress and I've listed the remaining work needed for completion of their API. Generally speaking it could use some more tests, as most are not testing any of the error paths. There is a growing amount of not-so-dry code around the private http calls, however I'd like to introduce pagination before doing a big refactor. Also going to see what that refactor could look like if we had generics :)
 ___
 
 Docs:
@@ -52,11 +52,12 @@ https://docs.pro.coinbase.com
 - [x] Reports
 
 ## Still needs:
+- [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
 - [ ] Deposits
 - [ ] Withdrawals
 - [ ] Margin
 - [ ] Oracle
-- [ ] WS feed and it's channels
+- [ ] WebSocket feed and it's channels
 
 ## Development
 Set the following environment variables which can point to either a live or sandbox coinbase pro account:
