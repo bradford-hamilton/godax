@@ -38,7 +38,7 @@ type ReportParams struct {
 	Email string `json:"email,omitempty"`
 }
 
-// Report represents the returned response after creating a report.
+// ReportStatus represents the returned response after creating a report.
 /*
 {
     "id": "0428b97b-bec1-429e-a94c-59232926778d",
@@ -53,7 +53,7 @@ type ReportParams struct {
         "end_date": "2014-11-30T23:59:59.000Z"
     }
 */
-type Report struct {
+type ReportStatus struct {
 	ID          string       `json:"id"`
 	Type        string       `json:"type"`
 	Status      string       `json:"status"`
@@ -64,16 +64,30 @@ type Report struct {
 	Params      ReportParams `json:"params"`
 }
 
-func (c *Client) createReport(timestamp, signature string, req *http.Request) (Report, error) {
+func (c *Client) createReport(timestamp, signature string, req *http.Request) (ReportStatus, error) {
 	res, err := c.do(timestamp, signature, req)
 	if err != nil {
-		return Report{}, err
+		return ReportStatus{}, err
 	}
 	defer res.Body.Close()
 
-	var report Report
+	var report ReportStatus
 	if err := json.NewDecoder(res.Body).Decode(&report); err != nil {
-		return Report{}, err
+		return ReportStatus{}, err
 	}
 	return report, nil
+}
+
+func (c *Client) getReportStatus(timestamp, signature string, req *http.Request) (ReportStatus, error) {
+	res, err := c.do(timestamp, signature, req)
+	if err != nil {
+		return ReportStatus{}, err
+	}
+	defer res.Body.Close()
+
+	var rs ReportStatus
+	if err := json.NewDecoder(res.Body).Decode(&rs); err != nil {
+		return ReportStatus{}, err
+	}
+	return rs, nil
 }

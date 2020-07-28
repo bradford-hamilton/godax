@@ -49,7 +49,7 @@ https://docs.pro.coinbase.com
 - [x] Market Data: products
 - [x] Market Data: currency
 - [x] Market Data: time
-- [partial] Reports
+- [x] Reports
 
 ## Still needs:
 - [ ] Deposits

@@ -622,20 +622,41 @@ func (c *Client) GetServerTime() (ServerTime, error) {
 // is available for download. Expired reports: reports are only available for download
 // for a few days after being created. Once a report expires, the report is no longer
 // available for download and is deleted.
-func (c *Client) CreateReport(report ReportParams) (Report, error) {
+func (c *Client) CreateReport(report ReportParams) (ReportStatus, error) {
 	timestamp := unixTime()
 	method := http.MethodPost
 	path := "/reports"
 
 	body, err := json.Marshal(report)
 	if err != nil {
-		return Report{}, err
+		return ReportStatus{}, err
 	}
 
 	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
 	if err != nil {
-		return Report{}, err
+		return ReportStatus{}, err
 	}
 
 	return c.createReport(timestamp, sig, req)
+}
+
+// GetReportStatus Once a report request has been accepted for processing, the status
+// is available by polling the report resource endpoint. The final report will be
+// uploaded and available at file_url once the status indicates ready.
+// STATUS		DESCRIPTION
+// pending		The report request has been accepted and is awaiting processing
+// creating		The report is being created
+// ready		The report is ready for download from file_url
+// This endpoint requires either the "view" or "trade" permission.
+func (c *Client) GetReportStatus(reportID string) (ReportStatus, error) {
+	timestamp := unixTime()
+	method := http.MethodGet
+	path := "/reports/" + reportID
+
+	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
+	if err != nil {
+		return ReportStatus{}, err
+	}
+
+	return c.getReportStatus(timestamp, sig, req)
 }

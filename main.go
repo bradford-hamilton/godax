@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/bradford-hamilton/godax/pkg/godax"
 )
@@ -268,4 +269,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nreport: %+v\n", report)
+
+	time.Sleep(2 * time.Second)
+
+	status, err := client.GetReportStatus(report.ID)
+	if err != nil {
+		fmt.Printf("\nerr getting status: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\nstatus: %+v\n", status)
 }
