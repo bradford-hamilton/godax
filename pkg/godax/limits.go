@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // ExchangeLimit represents info about your payment method transfer limits, as well as buy/sell limits per currency.
 /*
 {
@@ -70,18 +65,4 @@ type Limit struct {
 	// floats and not strings for "max" and "remaining"... Let coinbase know at some
 	// point to update docs.
 	// PeriodInDays int `json:"period_in_days"`
-}
-
-func (c *Client) getLimits(timestamp, signature string, req *http.Request) (ExchangeLimit, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return ExchangeLimit{}, err
-	}
-	defer res.Body.Close()
-
-	var limit ExchangeLimit
-	if err := json.NewDecoder(res.Body).Decode(&limit); err != nil {
-		return ExchangeLimit{}, err
-	}
-	return limit, nil
 }

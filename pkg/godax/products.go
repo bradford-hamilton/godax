@@ -2,7 +2,6 @@ package godax
 
 import (
 	"encoding/json"
-	"net/http"
 )
 
 // Product represents a coinbase pro product, for example "BTC-USD". Only a maximum of
@@ -236,102 +235,4 @@ func (h *HistoricRate) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	return nil
-}
-
-func (c *Client) listProducts(timestamp, signature string, req *http.Request) ([]Product, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var p []Product
-	if err := json.NewDecoder(res.Body).Decode(&p); err != nil {
-		return nil, err
-	}
-	return p, nil
-}
-
-func (c *Client) getProductByID(timestamp, signature string, req *http.Request) (Product, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Product{}, err
-	}
-	defer res.Body.Close()
-
-	var p Product
-	if err := json.NewDecoder(res.Body).Decode(&p); err != nil {
-		return Product{}, err
-	}
-	return p, nil
-}
-
-func (c *Client) getProductOrderBook(timestamp, signature string, req *http.Request) (OrderBook, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return OrderBook{}, err
-	}
-	defer res.Body.Close()
-
-	var ob OrderBook
-	if err := json.NewDecoder(res.Body).Decode(&ob); err != nil {
-		return OrderBook{}, err
-	}
-	return ob, nil
-}
-
-func (c *Client) listTradesByProduct(timestamp, signature string, req *http.Request) ([]Trade, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var trades []Trade
-	if err := json.NewDecoder(res.Body).Decode(&trades); err != nil {
-		return nil, err
-	}
-	return trades, nil
-}
-
-func (c *Client) getProductTicker(timestamp, signature string, req *http.Request) (Ticker, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Ticker{}, err
-	}
-	defer res.Body.Close()
-
-	var t Ticker
-	if err := json.NewDecoder(res.Body).Decode(&t); err != nil {
-		return Ticker{}, err
-	}
-	return t, nil
-}
-
-func (c *Client) getHistoricRatesForProduct(timestamp, signature string, req *http.Request) ([]HistoricRate, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var rates []HistoricRate
-	if err := json.NewDecoder(res.Body).Decode(&rates); err != nil {
-		return nil, err
-	}
-	return rates, nil
-}
-
-func (c *Client) get24HourStatsForProduct(timestamp, signature string, req *http.Request) (DayStat, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return DayStat{}, err
-	}
-	defer res.Body.Close()
-
-	var d DayStat
-	if err := json.NewDecoder(res.Body).Decode(&d); err != nil {
-		return DayStat{}, err
-	}
-	return d, nil
 }

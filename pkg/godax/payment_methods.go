@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // PaymentMethod represents a payment method connected the the api user's account and
 // holds metadata like type, name, currency, a list of limits, etc.
 /*
@@ -86,18 +81,4 @@ type PMLimit struct {
 type PMAmount struct {
 	Amount   string `json:"amount"`
 	Currency string `json:"currency"`
-}
-
-func (c *Client) listPaymentMethods(timestamp, signature string, req *http.Request) ([]PaymentMethod, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var pm []PaymentMethod
-	if err := json.NewDecoder(res.Body).Decode(&pm); err != nil {
-		return nil, err
-	}
-	return pm, nil
 }

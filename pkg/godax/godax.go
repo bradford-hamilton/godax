@@ -3,6 +3,7 @@ package godax
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -72,12 +73,12 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 	method := http.MethodGet
 	path := "/accounts"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var accounts []ListAccount
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &accounts); err != nil {
 		return nil, err
 	}
 
-	return c.listAccounts(timestamp, sig, req)
+	return accounts, nil
 }
 
 // GetAccount retrieves information for a single account. Use this endpoint when you know the
@@ -88,12 +89,12 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var account Account
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &account); err != nil {
 		return Account{}, err
 	}
 
-	return c.getAccount(timestamp, sig, req)
+	return account, nil
 }
 
 // GetAccountHistory lists account activity of the API key's profile. Account activity either increases
@@ -106,12 +107,12 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var activities []AccountActivity
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &activities); err != nil {
 		return nil, err
 	}
 
-	return c.getAccountHistory(timestamp, sig, req)
+	return activities, nil
 }
 
 // GetAccountHolds lists holds of an account that belong to the same profile as the API key.
@@ -125,12 +126,12 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/holds"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var holds []AccountHold
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &holds); err != nil {
 		return nil, err
 	}
 
-	return c.getAccountHolds(timestamp, sig, req)
+	return holds, nil
 }
 
 // PlaceOrder allows you to place two types of orders: limit and market. Orders can only be
@@ -148,13 +149,15 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 		return Order{}, err
 	}
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
-	if err != nil {
+	var o Order
+	if err := c.executeReq(timestamp, method, path, body, nil, &o); err != nil {
 		return Order{}, err
 	}
 
-	return c.placeOrder(timestamp, sig, req)
+	return o, nil
 }
+
+// TODO: do the below two methods need to rerturn anything but an error? Probably not.
 
 // CancelOrderByID cancels a previously placed order. Order must belong to the profile that
 // the API key belongs to. If the order had no matches during its lifetime its record may be
@@ -166,12 +169,18 @@ func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderI
 	method := http.MethodDelete
 	path := "/orders/" + orderID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
+	req, sig, err := c.createAndSignReq(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
 
-	return c.cancelOrder(timestamp, sig, req)
+	res, err := c.do(timestamp, sig, req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	return orderID, nil
 }
 
 // CancelOrderByClientOID cancels a previously placed order. Order must belong to the profile that
@@ -184,12 +193,23 @@ func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (cance
 	method := http.MethodDelete
 	path := "/orders/client:" + clientOID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
+	req, sig, err := c.createAndSignReq(timestamp, method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
 
-	return c.cancelOrder(timestamp, sig, req)
+	res, err := c.do(timestamp, sig, req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	id, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(id), nil
 }
 
 // CancelAllOrders cancel all open orders from the profile that the API key belongs to. The response is
@@ -201,12 +221,11 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 	method := http.MethodDelete
 	path := "/orders"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
-	if err != nil {
+	if err := c.executeReq(timestamp, method, path, noBody, &qp, &canceledOrderIDs); err != nil {
 		return nil, err
 	}
 
-	return c.cancelAllOrders(timestamp, sig, req)
+	return canceledOrderIDs, nil
 }
 
 // ListOrders lists your current open orders from the profile that the API key belongs to. Only open or un-settled
@@ -228,12 +247,12 @@ func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	method := http.MethodGet
 	path := "/orders"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
-	if err != nil {
+	var orders []Order
+	if err := c.executeReq(timestamp, method, path, noBody, &qp, &orders); err != nil {
 		return nil, err
 	}
 
-	return c.listOrders(timestamp, sig, req)
+	return orders, nil
 }
 
 // GetOrderByID gets an order by its ID. This endpoint requires either the "view" or "trade" permission.
@@ -245,12 +264,12 @@ func (c *Client) GetOrderByID(orderID string) (Order, error) {
 	method := http.MethodGet
 	path := "/orders/" + orderID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var order Order
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &order); err != nil {
 		return Order{}, err
 	}
 
-	return c.getOrder(timestamp, sig, req)
+	return order, nil
 }
 
 // GetOrderByClientOID gets an order by its client OID. This endpoint requires either the "view" or "trade"
@@ -262,12 +281,12 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 	method := http.MethodGet
 	path := "/orders/client:" + orderClientOID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var order Order
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &order); err != nil {
 		return Order{}, err
 	}
 
-	return c.getOrder(timestamp, sig, req)
+	return order, nil
 }
 
 // ListFills gets a list of recent fills of the API key's profile. This endpoint requires either the "view"
@@ -285,12 +304,12 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 	method := http.MethodGet
 	path := "/fills"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
-	if err != nil {
+	var fills []Fill
+	if err := c.executeReq(timestamp, method, path, noBody, &qp, &fills); err != nil {
 		return nil, err
 	}
 
-	return c.listFills(timestamp, sig, req)
+	return fills, nil
 }
 
 // GetCurrentExchangeLimits will return information on your payment method transfer limits, as well as buy/sell limits per currency.
@@ -299,12 +318,12 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 	method := http.MethodGet
 	path := "/users/self/exchange-limits"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var limit ExchangeLimit
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &limit); err != nil {
 		return ExchangeLimit{}, err
 	}
 
-	return c.getLimits(timestamp, sig, req)
+	return limit, nil
 }
 
 // StableCoinConversion creates a stablecoin conversion. One example is converting $10,000.00 USD to 10,000.00 USDC.
@@ -317,22 +336,22 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	if from == "" || to == "" || amount == "" {
 		return Conversion{}, ErrMissingConversionParams
 	}
-	conv := conversionReq{From: from, To: to, Amount: amount}
+
 	timestamp := unixTime()
 	method := http.MethodPost
 	path := "/conversions"
 
-	body, err := json.Marshal(conv)
+	body, err := json.Marshal(conversionReq{From: from, To: to, Amount: amount})
 	if err != nil {
 		return Conversion{}, err
 	}
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
-	if err != nil {
+	var conv Conversion
+	if err := c.executeReq(timestamp, method, path, body, nil, &conv); err != nil {
 		return Conversion{}, err
 	}
 
-	return c.stableCoinConversion(timestamp, sig, req)
+	return conv, nil
 }
 
 // ListPaymentMethods gets a list of your payment methods.
@@ -341,12 +360,12 @@ func (c *Client) ListPaymentMethods() ([]PaymentMethod, error) {
 	method := http.MethodGet
 	path := "/payment-methods"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var pm []PaymentMethod
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &pm); err != nil {
 		return nil, err
 	}
 
-	return c.listPaymentMethods(timestamp, sig, req)
+	return pm, nil
 }
 
 // ListCoinbaseAccounts lists your user's coinbase (non-pro) accounts.
@@ -356,12 +375,12 @@ func (c *Client) ListCoinbaseAccounts() ([]CoinbaseAccount, error) {
 	method := http.MethodGet
 	path := "/coinbase-accounts"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var accts []CoinbaseAccount
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &accts); err != nil {
 		return nil, err
 	}
 
-	return c.listCoinbaseAccounts(timestamp, sig, req)
+	return accts, nil
 }
 
 // GetCurrentFees returns your current maker & taker fee rates, as well as your 30-day trailing volume.
@@ -371,12 +390,12 @@ func (c *Client) GetCurrentFees() (Fees, error) {
 	method := http.MethodGet
 	path := "/fees"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var fees Fees
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &fees); err != nil {
 		return Fees{}, err
 	}
 
-	return c.getCurrentFees(timestamp, sig, req)
+	return fees, nil
 }
 
 // GetTrailingVolume returns your 30-day trailing volume for all products of the API key's profile.
@@ -387,12 +406,12 @@ func (c *Client) GetTrailingVolume() ([]UserAccount, error) {
 	method := http.MethodGet
 	path := "/users/self/trailing-volume"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var userActs []UserAccount
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &userActs); err != nil {
 		return nil, err
 	}
 
-	return c.getTrailingVolume(timestamp, sig, req)
+	return userActs, nil
 }
 
 // ListProfiles lists the api key user's profiles which are equivilant to portfolios.
@@ -402,12 +421,12 @@ func (c *Client) ListProfiles() ([]Profile, error) {
 	method := http.MethodGet
 	path := "/profiles"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var profiles []Profile
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &profiles); err != nil {
 		return nil, err
 	}
 
-	return c.listProfiles(timestamp, sig, req)
+	return profiles, nil
 }
 
 // GetProfile gets a single profile by profile id. This endpoint requires the "view" permission
@@ -417,12 +436,12 @@ func (c *Client) GetProfile(profileID string) (Profile, error) {
 	method := http.MethodGet
 	path := "/profiles/" + profileID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var prof Profile
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &prof); err != nil {
 		return Profile{}, err
 	}
 
-	return c.getProfile(timestamp, sig, req)
+	return prof, nil
 }
 
 // ProfileTransfer transfers funds from API key's profile to another user owned profile.
@@ -436,13 +455,15 @@ func (c *Client) ProfileTransfer(transfer TransferParams) error {
 	if err != nil {
 		return err
 	}
-
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
+	req, sig, err := c.createAndSignReq(timestamp, method, path, body, nil)
 	if err != nil {
 		return err
 	}
+	if _, err := c.do(timestamp, sig, req); err != nil {
+		return err
+	}
 
-	return c.profileTransfer(timestamp, sig, req)
+	return nil
 }
 
 // ListProducts gets a list of available currency pairs for trading. The Market Data API is an
@@ -453,12 +474,12 @@ func (c *Client) ListProducts() ([]Product, error) {
 	method := http.MethodGet
 	path := "/products"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var products []Product
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &products); err != nil {
 		return nil, err
 	}
 
-	return c.listProducts(timestamp, sig, req)
+	return products, nil
 }
 
 // GetProductByID gets market data for a specific currency pair.
@@ -467,12 +488,12 @@ func (c *Client) GetProductByID(productID string) (Product, error) {
 	method := http.MethodGet
 	path := "/products/" + productID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var product Product
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &product); err != nil {
 		return Product{}, err
 	}
 
-	return c.getProductByID(timestamp, sig, req)
+	return product, nil
 }
 
 // GetProductOrderBook gets a list of open orders for a product. The amount of detail shown can
@@ -496,12 +517,12 @@ func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBoo
 	method := http.MethodGet
 	path := "/products/" + productID + "/book"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
-	if err != nil {
+	var ob OrderBook
+	if err := c.executeReq(timestamp, method, path, noBody, &qp, &ob); err != nil {
 		return OrderBook{}, err
 	}
 
-	return c.getProductOrderBook(timestamp, sig, req)
+	return ob, nil
 }
 
 // GetProductTicker returns snapshot information about the last trade (tick), best bid/ask and 24h volume.
@@ -511,12 +532,12 @@ func (c *Client) GetProductTicker(productID string) (Ticker, error) {
 	method := http.MethodGet
 	path := "/products/" + productID + "/ticker"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var ticker Ticker
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &ticker); err != nil {
 		return Ticker{}, err
 	}
 
-	return c.getProductTicker(timestamp, sig, req)
+	return ticker, nil
 }
 
 // ListTradesByProduct lists the latest trades for a product. The trade side indicates the
@@ -528,12 +549,12 @@ func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
 	method := http.MethodGet
 	path := "/products/" + productID + "/trades"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var trades []Trade
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &trades); err != nil {
 		return nil, err
 	}
 
-	return c.listTradesByProduct(timestamp, sig, req)
+	return trades, nil
 }
 
 // GetHistoricRatesForProduct gets historic rates for a product. Rates are returned in grouped
@@ -558,12 +579,12 @@ func (c *Client) GetHistoricRatesForProduct(productID string, qp QueryParams) ([
 	method := http.MethodGet
 	path := "/products/" + productID + "/candles"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, &qp)
-	if err != nil {
+	var rates []HistoricRate
+	if err := c.executeReq(timestamp, method, path, noBody, &qp, &rates); err != nil {
 		return nil, err
 	}
 
-	return c.getHistoricRatesForProduct(timestamp, sig, req)
+	return rates, nil
 }
 
 // Get24HourStatsForProduct gets 24 hr stats for the product. Volume is in base currency units. Open, high,
@@ -573,12 +594,12 @@ func (c *Client) Get24HourStatsForProduct(productID string) (DayStat, error) {
 	method := http.MethodGet
 	path := "/products/" + productID + "/stats"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var dayStat DayStat
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &dayStat); err != nil {
 		return DayStat{}, err
 	}
 
-	return c.get24HourStatsForProduct(timestamp, sig, req)
+	return dayStat, nil
 }
 
 // ListCurrencies lists known currencies. Currency codes will conform to the ISO 4217 standard where possible.
@@ -592,12 +613,12 @@ func (c *Client) ListCurrencies() ([]Currency, error) {
 	method := http.MethodGet
 	path := "/currencies"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var currencies []Currency
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &currencies); err != nil {
 		return nil, err
 	}
 
-	return c.listCurrencies(timestamp, sig, req)
+	return currencies, nil
 }
 
 // GetServerTime fetches the current coinbase pro server time. This endpoint does not require authentication.
@@ -606,12 +627,12 @@ func (c *Client) GetServerTime() (ServerTime, error) {
 	method := http.MethodGet
 	path := "/time"
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var srvTime ServerTime
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &srvTime); err != nil {
 		return ServerTime{}, err
 	}
 
-	return c.getServerTime(timestamp, sig, req)
+	return srvTime, nil
 }
 
 // CreateReport creates reports that provide batches of historic information about your
@@ -632,12 +653,12 @@ func (c *Client) CreateReport(report ReportParams) (ReportStatus, error) {
 		return ReportStatus{}, err
 	}
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, body, nil)
-	if err != nil {
+	var r ReportStatus
+	if err := c.executeReq(timestamp, method, path, body, nil, &r); err != nil {
 		return ReportStatus{}, err
 	}
 
-	return c.createReport(timestamp, sig, req)
+	return r, nil
 }
 
 // GetReportStatus Once a report request has been accepted for processing, the status
@@ -653,10 +674,10 @@ func (c *Client) GetReportStatus(reportID string) (ReportStatus, error) {
 	method := http.MethodGet
 	path := "/reports/" + reportID
 
-	req, sig, err := c.createAndSignRequest(timestamp, method, path, noBody, nil)
-	if err != nil {
+	var r ReportStatus
+	if err := c.executeReq(timestamp, method, path, noBody, nil, &r); err != nil {
 		return ReportStatus{}, err
 	}
 
-	return c.getReportStatus(timestamp, sig, req)
+	return r, nil
 }

@@ -52,6 +52,7 @@ https://docs.pro.coinbase.com
 - [x] Reports
 
 ## Still needs:
+- [ ] Retry logic
 - [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
 - [ ] Deposits
 - [ ] Withdrawals

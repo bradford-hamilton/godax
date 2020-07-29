@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // Fill represents a filled order on coinbase.
 /*
 {
@@ -51,18 +46,4 @@ type Fill struct {
 
 	// Side is either buy or sell
 	Side string `json:"side"`
-}
-
-func (c *Client) listFills(timestamp, signature string, req *http.Request) ([]Fill, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var fills []Fill
-	if err := json.NewDecoder(res.Body).Decode(&fills); err != nil {
-		return nil, err
-	}
-	return fills, nil
 }

@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // ReportParams describe the body needed in a call to generate a report.
 /*
 {
@@ -62,32 +57,4 @@ type ReportStatus struct {
 	ExpiresAt   string       `json:"expires_at"`
 	FileURL     string       `json:"file_url"`
 	Params      ReportParams `json:"params"`
-}
-
-func (c *Client) createReport(timestamp, signature string, req *http.Request) (ReportStatus, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return ReportStatus{}, err
-	}
-	defer res.Body.Close()
-
-	var report ReportStatus
-	if err := json.NewDecoder(res.Body).Decode(&report); err != nil {
-		return ReportStatus{}, err
-	}
-	return report, nil
-}
-
-func (c *Client) getReportStatus(timestamp, signature string, req *http.Request) (ReportStatus, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return ReportStatus{}, err
-	}
-	defer res.Body.Close()
-
-	var rs ReportStatus
-	if err := json.NewDecoder(res.Body).Decode(&rs); err != nil {
-		return ReportStatus{}, err
-	}
-	return rs, nil
 }

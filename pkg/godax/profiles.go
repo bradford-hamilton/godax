@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // Profile represents a coinbase pro profile which is equivalent to a portfolio.
 /*
 {
@@ -44,39 +39,4 @@ type TransferParams struct {
 	Currency string `json:"currency"`
 	// Amount is the amount of currency to be transferred
 	Amount string `json:"amount"`
-}
-
-func (c *Client) listProfiles(timestamp, signature string, req *http.Request) ([]Profile, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return []Profile{}, err
-	}
-	defer res.Body.Close()
-
-	var profiles []Profile
-	if err := json.NewDecoder(res.Body).Decode(&profiles); err != nil {
-		return []Profile{}, err
-	}
-	return profiles, nil
-}
-
-func (c *Client) getProfile(timestamp, signature string, req *http.Request) (Profile, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Profile{}, err
-	}
-	defer res.Body.Close()
-
-	var p Profile
-	if err := json.NewDecoder(res.Body).Decode(&p); err != nil {
-		return Profile{}, err
-	}
-	return p, nil
-}
-
-func (c *Client) profileTransfer(timestamp, signature string, req *http.Request) error {
-	if _, err := c.do(timestamp, signature, req); err != nil {
-		return err
-	}
-	return nil
 }

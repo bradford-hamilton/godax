@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // Conversion represents the return value value from a call to StableCoinConversion.
 // It describes different metadata around the stablecoin conversion.
 /*
@@ -38,18 +33,4 @@ type conversionReq struct {
 	To     string `json:"to"`
 	From   string `json:"from"`
 	Amount string `json:"amount"`
-}
-
-func (c *Client) stableCoinConversion(timestamp, signature string, req *http.Request) (Conversion, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Conversion{}, err
-	}
-	defer res.Body.Close()
-
-	var conv Conversion
-	if err := json.NewDecoder(res.Body).Decode(&conv); err != nil {
-		return Conversion{}, err
-	}
-	return conv, nil
 }

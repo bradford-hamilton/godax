@@ -1,10 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"net/http"
-)
-
 // ListAccount represents a trading account for a coinbase pro profile
 /*
 	{
@@ -297,88 +292,4 @@ type UserAccount struct {
 	ExchangeVolume string `json:"exchange_volume"`
 	Volume         string `json:"volume"`
 	RecordedAt     string `json:"recorded_at"`
-}
-
-func (c *Client) listAccounts(timestamp, signature string, req *http.Request) ([]ListAccount, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return []ListAccount{}, err
-	}
-	defer res.Body.Close()
-
-	var accounts []ListAccount
-	if err := json.NewDecoder(res.Body).Decode(&accounts); err != nil {
-		return []ListAccount{}, err
-	}
-	return accounts, nil
-}
-
-func (c *Client) getAccount(timestamp, signature string, req *http.Request) (Account, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Account{}, err
-	}
-	defer res.Body.Close()
-
-	var account Account
-	if err := json.NewDecoder(res.Body).Decode(&account); err != nil {
-		return Account{}, err
-	}
-	return account, nil
-}
-
-func (c *Client) getAccountHistory(timestamp, signature string, req *http.Request) ([]AccountActivity, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return []AccountActivity{}, err
-	}
-	defer res.Body.Close()
-
-	var activities []AccountActivity
-	if err := json.NewDecoder(res.Body).Decode(&activities); err != nil {
-		return []AccountActivity{}, err
-	}
-	return activities, nil
-}
-
-func (c *Client) getAccountHolds(timestamp, signature string, req *http.Request) ([]AccountHold, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return []AccountHold{}, err
-	}
-	defer res.Body.Close()
-
-	var holds []AccountHold
-	if err := json.NewDecoder(res.Body).Decode(&holds); err != nil {
-		return []AccountHold{}, err
-	}
-	return holds, nil
-}
-
-func (c *Client) listCoinbaseAccounts(timestamp, signature string, req *http.Request) ([]CoinbaseAccount, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return []CoinbaseAccount{}, err
-	}
-	defer res.Body.Close()
-
-	var cbAccounts []CoinbaseAccount
-	if err := json.NewDecoder(res.Body).Decode(&cbAccounts); err != nil {
-		return []CoinbaseAccount{}, err
-	}
-	return cbAccounts, nil
-}
-
-func (c *Client) getTrailingVolume(timestamp, signature string, req *http.Request) ([]UserAccount, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return []UserAccount{}, err
-	}
-	defer res.Body.Close()
-
-	var userActs []UserAccount
-	if err := json.NewDecoder(res.Body).Decode(&userActs); err != nil {
-		return []UserAccount{}, err
-	}
-	return userActs, nil
 }

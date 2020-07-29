@@ -1,11 +1,5 @@
 package godax
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-)
-
 // Order represents a trading account for a coinbase pro profile.
 /*
 {
@@ -119,74 +113,4 @@ type MarketOrderParams struct {
 	// a market buy order, size must be specified and Coinbase Pro will use available funds in your account
 	// to buy bitcoin.
 	Funds string `json:"funds,omitempty"`
-}
-
-func (c *Client) placeOrder(timestamp, signature string, req *http.Request) (Order, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Order{}, err
-	}
-	defer res.Body.Close()
-
-	var order Order
-	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
-		return Order{}, err
-	}
-	return order, nil
-}
-
-func (c *Client) cancelOrder(timestamp, signature string, req *http.Request) (string, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	orderID, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(orderID), nil
-}
-
-func (c *Client) cancelAllOrders(timestamp, signature string, req *http.Request) ([]string, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var orderIDs []string
-	if err := json.NewDecoder(res.Body).Decode(&orderIDs); err != nil {
-		return nil, err
-	}
-	return orderIDs, nil
-}
-
-func (c *Client) listOrders(timestamp, signature string, req *http.Request) ([]Order, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	var orders []Order
-	if err := json.NewDecoder(res.Body).Decode(&orders); err != nil {
-		return nil, err
-	}
-	return orders, nil
-}
-
-func (c *Client) getOrder(timestamp, signature string, req *http.Request) (Order, error) {
-	res, err := c.do(timestamp, signature, req)
-	if err != nil {
-		return Order{}, err
-	}
-	defer res.Body.Close()
-
-	var order Order
-	if err := json.NewDecoder(res.Body).Decode(&order); err != nil {
-		return Order{}, err
-	}
-	return order, nil
 }
