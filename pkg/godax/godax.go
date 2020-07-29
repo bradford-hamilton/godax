@@ -69,12 +69,11 @@ func unixTime() string {
 // This endpoint requires either the "view" or "trade" permission. This endpoint has a custom
 // rate limit by profile ID: 25 requests per second, up to 50 requests per second in bursts
 func (c *Client) ListAccounts() ([]ListAccount, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/accounts"
 
 	var accounts []ListAccount
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &accounts); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &accounts); err != nil {
 		return nil, err
 	}
 
@@ -85,12 +84,11 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 // account_id. API key must belong to the same profile as the account. This endpoint requires
 // either the "view" or "trade" permission.
 func (c *Client) GetAccount(accountID string) (Account, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/accounts/" + accountID
 
 	var account Account
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &account); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &account); err != nil {
 		return Account{}, err
 	}
 
@@ -103,12 +101,11 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 // and sorted latest first. This endpoint requires either the "view" or "trade" permission.
 // TODO: paginate
 func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/ledger"
 
 	var activities []AccountActivity
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &activities); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &activities); err != nil {
 		return nil, err
 	}
 
@@ -122,12 +119,11 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 // requires either the "view" or "trade" permission.
 // TODO: paginate
 func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/accounts/" + accountID + "/holds"
 
 	var holds []AccountHold
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &holds); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &holds); err != nil {
 		return nil, err
 	}
 
@@ -140,7 +136,6 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 // hold depends on the order type and parameters specified. This endpoint requires the
 // "trade" permission.
 func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
-	timestamp := unixTime()
 	method := http.MethodPost
 	path := "/orders"
 
@@ -150,7 +145,7 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 	}
 
 	var o Order
-	if err := c.executeReq(timestamp, method, path, body, nil, &o); err != nil {
+	if err := c.executeReq(unixTime(), method, path, body, nil, &o); err != nil {
 		return Order{}, err
 	}
 
@@ -165,16 +160,15 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 // The product ID of the order is not required so if you don't have it you can pass nil here.
 // The request will be more performant if you include it. This endpoint requires the "trade" permission.
 func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderID string, err error) {
-	timestamp := unixTime()
 	method := http.MethodDelete
 	path := "/orders/" + orderID
 
-	req, sig, err := c.createAndSignReq(timestamp, method, path, noBody, &qp)
+	req, sig, err := c.createAndSignReq(unixTime(), method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
 
-	res, err := c.do(timestamp, sig, req)
+	res, err := c.do(unixTime(), sig, req)
 	if err != nil {
 		return "", err
 	}
@@ -189,16 +183,15 @@ func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderI
 // The product ID of the order is not required so if you don't have it you can pass nil here.
 // The request will be more performant if you include it. This endpoint requires the "trade" permission.
 func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (canceledOrderID string, err error) {
-	timestamp := unixTime()
 	method := http.MethodDelete
 	path := "/orders/client:" + clientOID
 
-	req, sig, err := c.createAndSignReq(timestamp, method, path, noBody, &qp)
+	req, sig, err := c.createAndSignReq(unixTime(), method, path, noBody, &qp)
 	if err != nil {
 		return "", err
 	}
 
-	res, err := c.do(timestamp, sig, req)
+	res, err := c.do(unixTime(), sig, req)
 	if err != nil {
 		return "", err
 	}
@@ -217,11 +210,10 @@ func (c *Client) CancelOrderByClientOID(clientOID string, qp QueryParams) (cance
 // param is opitonal and a pointer, so you can pass nil. If you do provide the productID here, you will
 // only cancel orders open for that specific product.
 func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err error) {
-	timestamp := unixTime()
 	method := http.MethodDelete
 	path := "/orders"
 
-	if err := c.executeReq(timestamp, method, path, noBody, &qp, &canceledOrderIDs); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &canceledOrderIDs); err != nil {
 		return nil, err
 	}
 
@@ -243,12 +235,11 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 // match size * price and is only present for orders placed after 2016-05-20. Open orders may change state between the
 // request and the response depending on market conditions.
 func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/orders"
 
 	var orders []Order
-	if err := c.executeReq(timestamp, method, path, noBody, &qp, &orders); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &orders); err != nil {
 		return nil, err
 	}
 
@@ -260,12 +251,11 @@ func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 // If the order is canceled the response may have status code 404 if the order had no matches. Note:
 // Open orders may change state between the request and the response depending on market conditions.
 func (c *Client) GetOrderByID(orderID string) (Order, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/orders/" + orderID
 
 	var order Order
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &order); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &order); err != nil {
 		return Order{}, err
 	}
 
@@ -277,12 +267,11 @@ func (c *Client) GetOrderByID(orderID string) (Order, error) {
 // If the order is canceled the response may have status code 404 if the order had no matches. Note: Open orders
 // may change state between the request and the response depending on market conditions.
 func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/orders/client:" + orderClientOID
 
 	var order Order
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &order); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &order); err != nil {
 		return Order{}, err
 	}
 
@@ -300,12 +289,11 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 	if qp[ProductID] == "" && qp[OrderID] == "" {
 		return nil, ErrMissingOrderOrProductID
 	}
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/fills"
 
 	var fills []Fill
-	if err := c.executeReq(timestamp, method, path, noBody, &qp, &fills); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &fills); err != nil {
 		return nil, err
 	}
 
@@ -314,12 +302,11 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 
 // GetCurrentExchangeLimits will return information on your payment method transfer limits, as well as buy/sell limits per currency.
 func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/users/self/exchange-limits"
 
 	var limit ExchangeLimit
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &limit); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &limit); err != nil {
 		return ExchangeLimit{}, err
 	}
 
@@ -337,7 +324,6 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 		return Conversion{}, ErrMissingConversionParams
 	}
 
-	timestamp := unixTime()
 	method := http.MethodPost
 	path := "/conversions"
 
@@ -347,7 +333,7 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	}
 
 	var conv Conversion
-	if err := c.executeReq(timestamp, method, path, body, nil, &conv); err != nil {
+	if err := c.executeReq(unixTime(), method, path, body, nil, &conv); err != nil {
 		return Conversion{}, err
 	}
 
@@ -356,12 +342,11 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 
 // ListPaymentMethods gets a list of your payment methods.
 func (c *Client) ListPaymentMethods() ([]PaymentMethod, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/payment-methods"
 
 	var pm []PaymentMethod
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &pm); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &pm); err != nil {
 		return nil, err
 	}
 
@@ -371,12 +356,11 @@ func (c *Client) ListPaymentMethods() ([]PaymentMethod, error) {
 // ListCoinbaseAccounts lists your user's coinbase (non-pro) accounts.
 // This endpoint requires either the "view" or "transfer" permission.
 func (c *Client) ListCoinbaseAccounts() ([]CoinbaseAccount, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/coinbase-accounts"
 
 	var accts []CoinbaseAccount
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &accts); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &accts); err != nil {
 		return nil, err
 	}
 
@@ -386,12 +370,11 @@ func (c *Client) ListCoinbaseAccounts() ([]CoinbaseAccount, error) {
 // GetCurrentFees returns your current maker & taker fee rates, as well as your 30-day trailing volume.
 // Quoted rates are subject to change.
 func (c *Client) GetCurrentFees() (Fees, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/fees"
 
 	var fees Fees
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &fees); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &fees); err != nil {
 		return Fees{}, err
 	}
 
@@ -402,12 +385,11 @@ func (c *Client) GetCurrentFees() (Fees, error) {
 // This is a cached value that's calculated every day at midnight UTC.
 // This endpoint requires either the "view" or "trade" permission.
 func (c *Client) GetTrailingVolume() ([]UserAccount, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/users/self/trailing-volume"
 
 	var userActs []UserAccount
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &userActs); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &userActs); err != nil {
 		return nil, err
 	}
 
@@ -417,12 +399,11 @@ func (c *Client) GetTrailingVolume() ([]UserAccount, error) {
 // ListProfiles lists the api key user's profiles which are equivilant to portfolios.
 // This endpoint requires the "view" permission and is accessible by any profile's API key.
 func (c *Client) ListProfiles() ([]Profile, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/profiles"
 
 	var profiles []Profile
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &profiles); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &profiles); err != nil {
 		return nil, err
 	}
 
@@ -432,12 +413,11 @@ func (c *Client) ListProfiles() ([]Profile, error) {
 // GetProfile gets a single profile by profile id. This endpoint requires the "view" permission
 // and is accessible by any profile's API key.
 func (c *Client) GetProfile(profileID string) (Profile, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/profiles/" + profileID
 
 	var prof Profile
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &prof); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &prof); err != nil {
 		return Profile{}, err
 	}
 
@@ -447,7 +427,6 @@ func (c *Client) GetProfile(profileID string) (Profile, error) {
 // ProfileTransfer transfers funds from API key's profile to another user owned profile.
 // This endpoint requires the "transfer" permission.
 func (c *Client) ProfileTransfer(transfer TransferParams) error {
-	timestamp := unixTime()
 	method := http.MethodPost
 	path := "/profiles/transfer"
 
@@ -455,11 +434,11 @@ func (c *Client) ProfileTransfer(transfer TransferParams) error {
 	if err != nil {
 		return err
 	}
-	req, sig, err := c.createAndSignReq(timestamp, method, path, body, nil)
+	req, sig, err := c.createAndSignReq(unixTime(), method, path, body, nil)
 	if err != nil {
 		return err
 	}
-	if _, err := c.do(timestamp, sig, req); err != nil {
+	if _, err := c.do(unixTime(), sig, req); err != nil {
 		return err
 	}
 
@@ -470,12 +449,11 @@ func (c *Client) ProfileTransfer(transfer TransferParams) error {
 // unauthenticated set of endpoints for retrieving market data. These endpoints provide snapshots
 // of market data.
 func (c *Client) ListProducts() ([]Product, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products"
 
 	var products []Product
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &products); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &products); err != nil {
 		return nil, err
 	}
 
@@ -484,12 +462,11 @@ func (c *Client) ListProducts() ([]Product, error) {
 
 // GetProductByID gets market data for a specific currency pair.
 func (c *Client) GetProductByID(productID string) (Product, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID
 
 	var product Product
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &product); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &product); err != nil {
 		return Product{}, err
 	}
 
@@ -513,12 +490,11 @@ func (c *Client) GetProductByID(productID string) (Product, error) {
 // order book using the websocket stream. Abuse of Level 3 via polling will cause your access
 // to be limited or blocked.
 func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBook, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID + "/book"
 
 	var ob OrderBook
-	if err := c.executeReq(timestamp, method, path, noBody, &qp, &ob); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &ob); err != nil {
 		return OrderBook{}, err
 	}
 
@@ -528,12 +504,11 @@ func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBoo
 // GetProductTicker returns snapshot information about the last trade (tick), best bid/ask and 24h volume.
 // Polling is discouraged in favor of connecting via the websocket stream and listening for match messages.
 func (c *Client) GetProductTicker(productID string) (Ticker, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID + "/ticker"
 
 	var ticker Ticker
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &ticker); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &ticker); err != nil {
 		return Ticker{}, err
 	}
 
@@ -545,12 +520,11 @@ func (c *Client) GetProductTicker(productID string) (Ticker, error) {
 // indicates a down-tick because the maker was a buy order and their order was removed.
 // Conversely, sell side indicates an up-tick.
 func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID + "/trades"
 
 	var trades []Trade
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &trades); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &trades); err != nil {
 		return nil, err
 	}
 
@@ -575,12 +549,11 @@ func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
 // in more than 300 data points, your request will be rejected. If you wish to retrieve fine granularity data
 // over a larger time range, you will need to make multiple requests with new start/end ranges.
 func (c *Client) GetHistoricRatesForProduct(productID string, qp QueryParams) ([]HistoricRate, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID + "/candles"
 
 	var rates []HistoricRate
-	if err := c.executeReq(timestamp, method, path, noBody, &qp, &rates); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &rates); err != nil {
 		return nil, err
 	}
 
@@ -590,12 +563,11 @@ func (c *Client) GetHistoricRatesForProduct(productID string, qp QueryParams) ([
 // Get24HourStatsForProduct gets 24 hr stats for the product. Volume is in base currency units. Open, high,
 // low are in quote currency units.
 func (c *Client) Get24HourStatsForProduct(productID string) (DayStat, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/products/" + productID + "/stats"
 
 	var dayStat DayStat
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &dayStat); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &dayStat); err != nil {
 		return DayStat{}, err
 	}
 
@@ -609,12 +581,11 @@ func (c *Client) Get24HourStatsForProduct(productID string) (DayStat, error) {
 // ETH		Ether
 // LTC		Litecoin
 func (c *Client) ListCurrencies() ([]Currency, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/currencies"
 
 	var currencies []Currency
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &currencies); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &currencies); err != nil {
 		return nil, err
 	}
 
@@ -623,12 +594,11 @@ func (c *Client) ListCurrencies() ([]Currency, error) {
 
 // GetServerTime fetches the current coinbase pro server time. This endpoint does not require authentication.
 func (c *Client) GetServerTime() (ServerTime, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/time"
 
 	var srvTime ServerTime
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &srvTime); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &srvTime); err != nil {
 		return ServerTime{}, err
 	}
 
@@ -644,7 +614,6 @@ func (c *Client) GetServerTime() (ServerTime, error) {
 // for a few days after being created. Once a report expires, the report is no longer
 // available for download and is deleted.
 func (c *Client) CreateReport(report ReportParams) (ReportStatus, error) {
-	timestamp := unixTime()
 	method := http.MethodPost
 	path := "/reports"
 
@@ -654,7 +623,7 @@ func (c *Client) CreateReport(report ReportParams) (ReportStatus, error) {
 	}
 
 	var r ReportStatus
-	if err := c.executeReq(timestamp, method, path, body, nil, &r); err != nil {
+	if err := c.executeReq(unixTime(), method, path, body, nil, &r); err != nil {
 		return ReportStatus{}, err
 	}
 
@@ -670,14 +639,12 @@ func (c *Client) CreateReport(report ReportParams) (ReportStatus, error) {
 // ready		The report is ready for download from file_url
 // This endpoint requires either the "view" or "trade" permission.
 func (c *Client) GetReportStatus(reportID string) (ReportStatus, error) {
-	timestamp := unixTime()
 	method := http.MethodGet
 	path := "/reports/" + reportID
 
 	var r ReportStatus
-	if err := c.executeReq(timestamp, method, path, noBody, nil, &r); err != nil {
+	if err := c.executeReq(unixTime(), method, path, noBody, nil, &r); err != nil {
 		return ReportStatus{}, err
 	}
-
 	return r, nil
 }
