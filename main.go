@@ -278,4 +278,11 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("\nstatus: %+v\n", status)
+
+	oracle, err := client.GetOracle()
+	if err != nil {
+		fmt.Printf("\nerr getting oracle: %+v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("\noracle: %+v\n", oracle)
 }

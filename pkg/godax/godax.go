@@ -655,3 +655,17 @@ func (c *Client) GetReportStatus(reportID string) (ReportStatus, error) {
 	}
 	return r, nil
 }
+
+// GetOracle gets cryptographically signed prices ready to be posted on-chain using
+// Open Oracle (https://github.com/compound-finance/open-oracle) smart contracts.
+// This endpoint requires the “view” permission and is accessible by any profile’s API key.
+func (c *Client) GetOracle() (Oracle, error) {
+	method := http.MethodGet
+	path := "/oracle"
+
+	var o Oracle
+	if err := c.exec(unixTime(), method, path, noBody, nil, &o); err != nil {
+		return Oracle{}, err
+	}
+	return o, nil
+}

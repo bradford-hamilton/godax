@@ -51,13 +51,13 @@ https://docs.pro.coinbase.com
 - [x] Market Data: time
 - [x] Reports
 - [x] Retry logic
+- [x] Oracle
 
 ## Still needs:
 - [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
 - [ ] Deposits
 - [ ] Withdrawals
 - [ ] Margin
-- [ ] Oracle
 - [ ] WebSocket feed and it's channels
 
 ## Development
