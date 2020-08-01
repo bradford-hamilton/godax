@@ -50,9 +50,9 @@ https://docs.pro.coinbase.com
 - [x] Market Data: currency
 - [x] Market Data: time
 - [x] Reports
+- [x] Retry logic
 
 ## Still needs:
-- [ ] Retry logic
 - [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
 - [ ] Deposits
 - [ ] Withdrawals

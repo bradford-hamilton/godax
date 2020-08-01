@@ -8,7 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const userAgent = "godax coinbase pro client"
@@ -26,7 +27,7 @@ type CoinbaseErrRes struct {
 
 func newClient(sandbox bool) (*Client, error) {
 	c := &Client{
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		httpClient: retryablehttp.NewClient().StandardClient(),
 	}
 	if err := c.loadEnv(sandbox); err != nil {
 		return nil, err
@@ -34,8 +35,8 @@ func newClient(sandbox bool) (*Client, error) {
 	return c, nil
 }
 
-// executeReq note: decodes into the value pointed at by v. In other words, `v` cannot be nil or a non-pointer.
-func (c *Client) executeReq(timestamp, method, path string, body []byte, qp *QueryParams, v interface{}) error {
+// exec note: decodes into the value pointed at by v. In other words, `v` cannot be nil or a non-pointer.
+func (c *Client) exec(timestamp, method, path string, body []byte, qp *QueryParams, v interface{}) error {
 	req, sig, err := c.createAndSignReq(timestamp, method, path, body, qp)
 	if err != nil {
 		return err

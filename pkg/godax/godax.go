@@ -1,3 +1,11 @@
+// Package godax implements an http client for interacting with the coinbase pro API.
+// Rest API
+// PUBLIC ENDPOINTS
+// 		We throttle public endpoints by IP: 3 requests per second, up to 6 requests per second in bursts.
+// 		Some endpoints may have custom rate limits.
+// PRIVATE ENDPOINTS
+// 		We throttle private endpoints by profile ID: 5 requests per second, up to 10 requests per second
+// 		in bursts. Some endpoints may have custom rate limits.
 package godax
 
 import (
@@ -73,7 +81,7 @@ func (c *Client) ListAccounts() ([]ListAccount, error) {
 	path := "/accounts"
 
 	var accounts []ListAccount
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &accounts); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &accounts); err != nil {
 		return nil, err
 	}
 
@@ -88,7 +96,7 @@ func (c *Client) GetAccount(accountID string) (Account, error) {
 	path := "/accounts/" + accountID
 
 	var account Account
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &account); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &account); err != nil {
 		return Account{}, err
 	}
 
@@ -105,7 +113,7 @@ func (c *Client) GetAccountHistory(accountID string) ([]AccountActivity, error) 
 	path := "/accounts/" + accountID + "/ledger"
 
 	var activities []AccountActivity
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &activities); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &activities); err != nil {
 		return nil, err
 	}
 
@@ -123,7 +131,7 @@ func (c *Client) GetAccountHolds(accountID string) ([]AccountHold, error) {
 	path := "/accounts/" + accountID + "/holds"
 
 	var holds []AccountHold
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &holds); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &holds); err != nil {
 		return nil, err
 	}
 
@@ -145,7 +153,7 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 	}
 
 	var o Order
-	if err := c.executeReq(unixTime(), method, path, body, nil, &o); err != nil {
+	if err := c.exec(unixTime(), method, path, body, nil, &o); err != nil {
 		return Order{}, err
 	}
 
@@ -213,7 +221,7 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 	method := http.MethodDelete
 	path := "/orders"
 
-	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &canceledOrderIDs); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &canceledOrderIDs); err != nil {
 		return nil, err
 	}
 
@@ -239,7 +247,7 @@ func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	path := "/orders"
 
 	var orders []Order
-	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &orders); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &orders); err != nil {
 		return nil, err
 	}
 
@@ -255,7 +263,7 @@ func (c *Client) GetOrderByID(orderID string) (Order, error) {
 	path := "/orders/" + orderID
 
 	var order Order
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &order); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &order); err != nil {
 		return Order{}, err
 	}
 
@@ -271,7 +279,7 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 	path := "/orders/client:" + orderClientOID
 
 	var order Order
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &order); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &order); err != nil {
 		return Order{}, err
 	}
 
@@ -293,7 +301,7 @@ func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 	path := "/fills"
 
 	var fills []Fill
-	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &fills); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &fills); err != nil {
 		return nil, err
 	}
 
@@ -306,7 +314,7 @@ func (c *Client) GetCurrentExchangeLimits() (ExchangeLimit, error) {
 	path := "/users/self/exchange-limits"
 
 	var limit ExchangeLimit
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &limit); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &limit); err != nil {
 		return ExchangeLimit{}, err
 	}
 
@@ -323,7 +331,6 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	if from == "" || to == "" || amount == "" {
 		return Conversion{}, ErrMissingConversionParams
 	}
-
 	method := http.MethodPost
 	path := "/conversions"
 
@@ -333,7 +340,7 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	}
 
 	var conv Conversion
-	if err := c.executeReq(unixTime(), method, path, body, nil, &conv); err != nil {
+	if err := c.exec(unixTime(), method, path, body, nil, &conv); err != nil {
 		return Conversion{}, err
 	}
 
@@ -346,7 +353,7 @@ func (c *Client) ListPaymentMethods() ([]PaymentMethod, error) {
 	path := "/payment-methods"
 
 	var pm []PaymentMethod
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &pm); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &pm); err != nil {
 		return nil, err
 	}
 
@@ -360,7 +367,7 @@ func (c *Client) ListCoinbaseAccounts() ([]CoinbaseAccount, error) {
 	path := "/coinbase-accounts"
 
 	var accts []CoinbaseAccount
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &accts); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &accts); err != nil {
 		return nil, err
 	}
 
@@ -374,7 +381,7 @@ func (c *Client) GetCurrentFees() (Fees, error) {
 	path := "/fees"
 
 	var fees Fees
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &fees); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &fees); err != nil {
 		return Fees{}, err
 	}
 
@@ -389,7 +396,7 @@ func (c *Client) GetTrailingVolume() ([]UserAccount, error) {
 	path := "/users/self/trailing-volume"
 
 	var userActs []UserAccount
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &userActs); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &userActs); err != nil {
 		return nil, err
 	}
 
@@ -403,7 +410,7 @@ func (c *Client) ListProfiles() ([]Profile, error) {
 	path := "/profiles"
 
 	var profiles []Profile
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &profiles); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &profiles); err != nil {
 		return nil, err
 	}
 
@@ -417,7 +424,7 @@ func (c *Client) GetProfile(profileID string) (Profile, error) {
 	path := "/profiles/" + profileID
 
 	var prof Profile
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &prof); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &prof); err != nil {
 		return Profile{}, err
 	}
 
@@ -453,7 +460,7 @@ func (c *Client) ListProducts() ([]Product, error) {
 	path := "/products"
 
 	var products []Product
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &products); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &products); err != nil {
 		return nil, err
 	}
 
@@ -466,7 +473,7 @@ func (c *Client) GetProductByID(productID string) (Product, error) {
 	path := "/products/" + productID
 
 	var product Product
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &product); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &product); err != nil {
 		return Product{}, err
 	}
 
@@ -494,7 +501,7 @@ func (c *Client) GetProductOrderBook(productID string, qp QueryParams) (OrderBoo
 	path := "/products/" + productID + "/book"
 
 	var ob OrderBook
-	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &ob); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &ob); err != nil {
 		return OrderBook{}, err
 	}
 
@@ -508,7 +515,7 @@ func (c *Client) GetProductTicker(productID string) (Ticker, error) {
 	path := "/products/" + productID + "/ticker"
 
 	var ticker Ticker
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &ticker); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &ticker); err != nil {
 		return Ticker{}, err
 	}
 
@@ -524,7 +531,7 @@ func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
 	path := "/products/" + productID + "/trades"
 
 	var trades []Trade
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &trades); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &trades); err != nil {
 		return nil, err
 	}
 
@@ -553,7 +560,7 @@ func (c *Client) GetHistoricRatesForProduct(productID string, qp QueryParams) ([
 	path := "/products/" + productID + "/candles"
 
 	var rates []HistoricRate
-	if err := c.executeReq(unixTime(), method, path, noBody, &qp, &rates); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &rates); err != nil {
 		return nil, err
 	}
 
@@ -567,7 +574,7 @@ func (c *Client) Get24HourStatsForProduct(productID string) (DayStat, error) {
 	path := "/products/" + productID + "/stats"
 
 	var dayStat DayStat
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &dayStat); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &dayStat); err != nil {
 		return DayStat{}, err
 	}
 
@@ -585,7 +592,7 @@ func (c *Client) ListCurrencies() ([]Currency, error) {
 	path := "/currencies"
 
 	var currencies []Currency
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &currencies); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &currencies); err != nil {
 		return nil, err
 	}
 
@@ -598,7 +605,7 @@ func (c *Client) GetServerTime() (ServerTime, error) {
 	path := "/time"
 
 	var srvTime ServerTime
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &srvTime); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &srvTime); err != nil {
 		return ServerTime{}, err
 	}
 
@@ -623,7 +630,7 @@ func (c *Client) CreateReport(report ReportParams) (ReportStatus, error) {
 	}
 
 	var r ReportStatus
-	if err := c.executeReq(unixTime(), method, path, body, nil, &r); err != nil {
+	if err := c.exec(unixTime(), method, path, body, nil, &r); err != nil {
 		return ReportStatus{}, err
 	}
 
@@ -643,7 +650,7 @@ func (c *Client) GetReportStatus(reportID string) (ReportStatus, error) {
 	path := "/reports/" + reportID
 
 	var r ReportStatus
-	if err := c.executeReq(unixTime(), method, path, noBody, nil, &r); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, nil, &r); err != nil {
 		return ReportStatus{}, err
 	}
 	return r, nil
