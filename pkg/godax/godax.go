@@ -764,7 +764,6 @@ func (c *Client) GetAllWithdrawalPower() ([]AllWithdrawalPower, error) {
 	if err := c.exec(unixTime(), method, path, noBody, nil, &wp); err != nil {
 		return nil, err
 	}
-
 	return wp, nil
 }
 
@@ -782,7 +781,6 @@ func (c *Client) GetMarginExitPlan() (ExitPlan, error) {
 	if err := c.exec(unixTime(), method, path, noBody, nil, &exit); err != nil {
 		return ExitPlan{}, err
 	}
-
 	return exit, nil
 }
 
@@ -800,9 +798,25 @@ func (c *Client) ListLiquidationHistory(qp QueryParams) ([]LiquidationHistory, e
 	path := "/margin/liquidation_history"
 
 	var exit []LiquidationHistory
-	if err := c.exec(unixTime(), method, path, noBody, nil, &exit); err != nil {
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &exit); err != nil {
 		return nil, err
 	}
-
 	return exit, nil
+}
+
+// GetPositionRefreshAmounts returns the amount in USD of loans that will be renewed in the next
+// day and then the day after. "twoDayRenewalAmount" is the amount to be refreshed on only the second day.
+// This endpoint requires either the "view" or "trade" permission.
+func (c *Client) GetPositionRefreshAmounts(qp QueryParams) (RefreshAmount, error) {
+	if marginMethodsOnHold {
+		return RefreshAmount{}, ErrMarginMethodsOnHold
+	}
+	method := http.MethodGet
+	path := "/margin/position_refresh_amounts"
+
+	var ra RefreshAmount
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &ra); err != nil {
+		return RefreshAmount{}, err
+	}
+	return ra, nil
 }

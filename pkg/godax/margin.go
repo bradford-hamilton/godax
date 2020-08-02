@@ -235,3 +235,15 @@ type LiquidationHistory struct {
 		Settled       bool   `json:"settled"`
 	} `json:"orders"`
 }
+
+// RefreshAmount represents amount in USD of loans that will be renewed in the next day and then the day after.
+/*
+{
+    "oneDayRenewalAmount": "0",
+    "twoDayRenewalAmount": "417.93"
+}
+*/
+type RefreshAmount struct {
+	OneDayRenewalAmount string `json:"oneDayRenewalAmount"`
+	TwoDayRenewalAmount string `json:"twoDayRenewalAmount"`
+}
