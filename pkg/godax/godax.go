@@ -731,24 +731,24 @@ func (c *Client) GetBuyingPower(qp QueryParams) (BuyingPower, error) {
 // Param	Default	Description
 // currency	[required]	The currency to compute withdrawal power for.
 // This endpoint requires either the "view" or "trade" permission.
-func (c *Client) GetWithdrawalPowerForCurrency(qp QueryParams) (CurrencyWithdrawalPower, error) {
+func (c *Client) GetWithdrawalPowerForCurrency(qp QueryParams) ([]CurrencyWithdrawalPower, error) {
 	if marginMethodsOnHold {
-		return CurrencyWithdrawalPower{}, ErrMarginMethodsOnHold
+		return nil, ErrMarginMethodsOnHold
 	}
 	if qp[CurrencyParam] == "" {
-		return CurrencyWithdrawalPower{}, ErrMissingCurrency
+		return nil, ErrMissingCurrency
 	}
 	method := http.MethodGet
 	path := "/margin/withdrawal_power"
 
 	var wp []CurrencyWithdrawalPower
 	if err := c.exec(unixTime(), method, path, noBody, &qp, &wp); err != nil {
-		return CurrencyWithdrawalPower{}, err
+		return nil, err
 	}
 	if len(wp) != 1 {
-		return CurrencyWithdrawalPower{}, errors.New("no margin profile withdrawal information found")
+		return nil, errors.New("no margin profile withdrawal information found")
 	}
-	return wp[0], nil
+	return wp, nil
 }
 
 // GetAllWithdrawalPower returns the max amount of each currency that you can withdraw from your margin profile.
@@ -781,6 +781,27 @@ func (c *Client) GetMarginExitPlan() (ExitPlan, error) {
 	var exit ExitPlan
 	if err := c.exec(unixTime(), method, path, noBody, nil, &exit); err != nil {
 		return ExitPlan{}, err
+	}
+
+	return exit, nil
+}
+
+// ListLiquidationHistory returns returns a list of liquidations that were performed to get
+// your equity percentage back to an acceptable level. This endpoint requires either the "view"
+// or "trade" permission.
+// QUERY PARAMETERS
+// Param	Default	Description
+// after	[optional]	Request liquidation history after this date.
+func (c *Client) ListLiquidationHistory(qp QueryParams) ([]LiquidationHistory, error) {
+	if marginMethodsOnHold {
+		return nil, ErrMarginMethodsOnHold
+	}
+	method := http.MethodGet
+	path := "/margin/liquidation_history"
+
+	var exit []LiquidationHistory
+	if err := c.exec(unixTime(), method, path, noBody, nil, &exit); err != nil {
+		return nil, err
 	}
 
 	return exit, nil

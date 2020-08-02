@@ -318,4 +318,9 @@ func main() {
 	// 	fmt.Printf("\nerr getting exitPlan: %+v\n", err)
 	// }
 	// fmt.Printf("\nexitPlan: %+v\n", exitPlan)
+	exitPlan, err := client.ListLiquidationHistory(godax.QueryParams{})
+	if err != nil {
+		fmt.Printf("\nerr getting exitPlan: %+v\n", err)
+	}
+	fmt.Printf("\nexitPlan: %+v\n", exitPlan)
 }

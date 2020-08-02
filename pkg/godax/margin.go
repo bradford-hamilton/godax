@@ -51,8 +51,8 @@ type MarginProfile struct {
 	} `json:"available_borrow_limits"`
 	BorrowLimit  string `json:"borrow_limit"`
 	TopUpAmounts struct {
-		BorrowableUsd    float64 `json:"borrowable_usd"`
-		NonBorrowableUsd float64 `json:"non_borrowable_usd"`
+		BorrowableUsd    string `json:"borrowable_usd"`
+		NonBorrowableUsd string `json:"non_borrowable_usd"`
 	} `json:"top_up_amounts"`
 }
 
@@ -188,4 +188,50 @@ type ExitStrategy struct {
 	Strategy  string `json:"strategy"`
 	AccountID string `json:"accountId"`
 	OrderID   string `json:"orderId"`
+}
+
+// LiquidationHistory ...
+/*
+{
+    "event_id": "6d0edaf1-0c6f-11ea-a88c-0a04debd8c33",
+    "event_time": "2019-11-21T14:58:49.879Z",
+    "orders": [{
+        "id": "6c8d0d4e-0c6f-11ea-947d-0a04debd8c33",
+        "size": "0.02973507",
+        "product_id": "BTC-USD",
+        "profile_id": "8058d771-2d88-4f0f-ab6e-299c153d4308",
+        "side": "sell",
+        "type": "market",
+        "post_only": false,
+        "created_at": "2019-11-21 14:58:49.582305+00",
+        "done_at": "2019-11-21 14:58:49.596+00",
+        "done_reason": "filled",
+        "fill_fees": "1.1529981537990000",
+        "filled_size": "0.02973507",
+        "executed_value": "230.5996307598000000",
+        "status": "done",
+        "settled": true
+    }]
+}
+*/
+type LiquidationHistory struct {
+	EventID   string `json:"event_id"`
+	EventTime string `json:"event_time"`
+	Orders    []struct {
+		ID            string `json:"id"`
+		Size          string `json:"size"`
+		ProductID     string `json:"product_id"`
+		ProfileID     string `json:"profile_id"`
+		Side          string `json:"side"`
+		Type          string `json:"type"`
+		PostOnly      bool   `json:"post_only"`
+		CreatedAt     string `json:"created_at"`
+		DoneAt        string `json:"done_at"`
+		DoneReason    string `json:"done_reason"`
+		FillFees      string `json:"fill_fees"`
+		FilledSize    string `json:"filled_size"`
+		ExecutedValue string `json:"executed_value"`
+		Status        string `json:"status"`
+		Settled       bool   `json:"settled"`
+	} `json:"orders"`
 }
