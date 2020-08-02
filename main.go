@@ -318,9 +318,15 @@ func main() {
 	// 	fmt.Printf("\nerr getting exitPlan: %+v\n", err)
 	// }
 	// fmt.Printf("\nexitPlan: %+v\n", exitPlan)
-	exitPlan, err := client.ListLiquidationHistory(godax.QueryParams{})
+	// exitPlan, err := client.GetMarginExitPlan()
+	// if err != nil {
+	// 	fmt.Printf("\nerr getting exitPlan: %+v\n", err)
+	// }
+	// fmt.Printf("\nexitPlan: %+v\n", exitPlan)
+
+	marginStatus, err := client.GetMarginStatus()
 	if err != nil {
-		fmt.Printf("\nerr getting exitPlan: %+v\n", err)
+		fmt.Printf("\nerr getting marginStatus: %+v\n", err)
 	}
-	fmt.Printf("\nexitPlan: %+v\n", exitPlan)
+	fmt.Printf("\nmarginStatus: %+v\n", marginStatus)
 }

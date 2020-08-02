@@ -820,3 +820,16 @@ func (c *Client) GetPositionRefreshAmounts(qp QueryParams) (RefreshAmount, error
 	}
 	return ra, nil
 }
+
+// GetMarginStatus returns whether margin is currently enabled. This endpoint requires
+// either the "view" or "trade" permission.
+func (c *Client) GetMarginStatus() (MarginStatus, error) {
+	method := http.MethodGet
+	path := "/margin/status"
+
+	var ms MarginStatus
+	if err := c.exec(unixTime(), method, path, noBody, nil, &ms); err != nil {
+		return MarginStatus{}, err
+	}
+	return ms, nil
+}

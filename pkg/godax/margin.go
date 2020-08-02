@@ -247,3 +247,17 @@ type RefreshAmount struct {
 	OneDayRenewalAmount string `json:"oneDayRenewalAmount"`
 	TwoDayRenewalAmount string `json:"twoDayRenewalAmount"`
 }
+
+// MarginStatus represents the current status of an account's margin.
+/*
+{
+    "tier": 0,
+    "enabled": true,
+    "eligible": true
+}
+*/
+type MarginStatus struct {
+	Tier     int  `json:"tier"`
+	Enabled  bool `json:"enabled"`
+	Eligible bool `json:"eligible"`
+}

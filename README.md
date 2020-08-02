@@ -52,7 +52,7 @@ https://docs.pro.coinbase.com
 - [x] Reports
 - [x] Retry logic
 - [x] Oracle
-- [partial] Margin
+- [x] Margin
 
 ## Still needs:
 - [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
