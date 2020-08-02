@@ -182,7 +182,7 @@ func TestClient_CancelOrderByID(t *testing.T) {
 		{
 			name:                "when a successful cancel order has been made with a product ID",
 			fields:              defaultFields(),
-			args:                args{orderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8", qp: QueryParams{ProductID: productID}},
+			args:                args{orderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8", qp: QueryParams{ProductIDParam: productID}},
 			wantCanceledOrderID: "4f92c553-7c71-4b3a-8878-f415e6a2f0d8",
 			wantRaw:             "4f92c553-7c71-4b3a-8878-f415e6a2f0d8",
 		},
@@ -245,7 +245,7 @@ func TestClient_CancelOrderByClientOID(t *testing.T) {
 		{
 			name:                "when a successful cancel order has been made with a product ID",
 			fields:              defaultFields(),
-			args:                args{clientOID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8", qp: QueryParams{ProductID: productID}},
+			args:                args{clientOID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8", qp: QueryParams{ProductIDParam: productID}},
 			wantCanceledOrderID: "52e06257-dc1f-4e82-b115-c81f5f07a9d8",
 			wantRaw:             "52e06257-dc1f-4e82-b115-c81f5f07a9d8",
 		},
@@ -313,7 +313,7 @@ func TestClient_CancelAllOrders(t *testing.T) {
 		{
 			name:   "when a successful cancel all orders call has been made with a product ID",
 			fields: defaultFields(),
-			args:   args{QueryParams{ProductID: productID}},
+			args:   args{QueryParams{ProductIDParam: productID}},
 			wantCanceledOrderIDs: []string{
 				"db5b5cb9-3a86-4d44-b62d-c2c2c39d1446",
 				"7fc4a8bf-e22b-46f2-a881-5bedd2bc1571",
@@ -375,7 +375,7 @@ func TestClient_ListOrders(t *testing.T) {
 		{
 			name:   "when a successful list orders call has been made with no product ID",
 			fields: defaultFields(),
-			args:   args{QueryParams{Status: "", ProductID: ""}},
+			args:   args{QueryParams{StatusParam: "", ProductIDParam: ""}},
 			want: []Order{{
 				ID:            "b5bebfc6-4ee1-463c-8a57-7aa98eeb3f7e",
 				CreatedAt:     "2020-07-02T19:03:55.864229Z",
@@ -420,7 +420,7 @@ func TestClient_ListOrders(t *testing.T) {
 		{
 			name:   "when a successful list orders call has been made with a product ID",
 			fields: defaultFields(),
-			args:   args{QueryParams{ProductID: productID}},
+			args:   args{QueryParams{ProductIDParam: productID}},
 			want: []Order{{
 				ID:            "5b598eca-27cd-4ffc-bc17-8d5eaae67541",
 				CreatedAt:     "2020-07-02T19:03:55.864229Z",
@@ -503,7 +503,7 @@ func TestClient_ListOrders(t *testing.T) {
 		{
 			name:   "when a successful list orders call has been made with a status filter",
 			fields: defaultFields(),
-			args:   args{QueryParams{Status: status}},
+			args:   args{QueryParams{StatusParam: status}},
 			want: []Order{{
 				ID:            "2a795d2e-f77a-4ac6-8998-767fe36fbaed",
 				CreatedAt:     "2020-07-02T19:03:55.864229Z",

@@ -22,7 +22,7 @@ func TestClient_ListFills(t *testing.T) {
 		{
 			name:   "when a successful call is made to list fills it returns a slice of fills",
 			fields: defaultFields(),
-			args:   args{qp: QueryParams{OrderID: orderID, ProductID: productID}},
+			args:   args{qp: QueryParams{OrderIDParam: orderID, ProductIDParam: productID}},
 			want: []Fill{{
 				TradeID:   74,
 				ProductID: "BTC-USD",
@@ -70,7 +70,7 @@ func TestClient_ListFills(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			qp := QueryParams{OrderID: tt.args.qp[OrderID], ProductID: tt.args.qp[ProductID]}
+			qp := QueryParams{OrderIDParam: tt.args.qp[OrderIDParam], ProductIDParam: tt.args.qp[ProductIDParam]}
 			got, err := c.ListFills(qp)
 			if err != nil {
 				if tt.wantErr && err == ErrMissingOrderOrProductID {

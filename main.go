@@ -56,7 +56,7 @@ func main() {
 
 	fmt.Printf("\norder: %+v\n", o)
 
-	orderID1, err := client.CancelOrderByID(o.ID, godax.QueryParams{godax.ProductID: o.ProductID})
+	orderID1, err := client.CancelOrderByID(o.ID, godax.QueryParams{godax.ProductIDParam: o.ProductID})
 	if err != nil {
 		fmt.Println("err canceling:", err)
 	}
@@ -100,7 +100,7 @@ func main() {
 		}
 	}
 
-	ords, err := client.ListOrders(godax.QueryParams{godax.ProductID: "BTC-USD"})
+	ords, err := client.ListOrders(godax.QueryParams{godax.ProductIDParam: "BTC-USD"})
 	if err != nil {
 		fmt.Println("err listing orders: ", err)
 		os.Exit(1)
@@ -119,7 +119,7 @@ func main() {
 	fmt.Printf("\norderIDs: %+v\n", orderIDs)
 
 	// fmt.Printf("Orders should be empty now: %+v\n", ords)
-	qp := godax.QueryParams{godax.OrderID: o.ID}
+	qp := godax.QueryParams{godax.OrderIDParam: o.ID}
 	fills, err := client.ListFills(qp)
 	if err != nil {
 		fmt.Printf("err getting fills: %+v\n", err)
@@ -208,7 +208,7 @@ func main() {
 	}
 	fmt.Printf("\nproduct: %+v\n", product)
 
-	ob, err := client.GetProductOrderBook("BTC-USD", godax.QueryParams{godax.Level: "1"})
+	ob, err := client.GetProductOrderBook("BTC-USD", godax.QueryParams{godax.LevelParam: "1"})
 	if err != nil {
 		fmt.Printf("\nerr getting order book: %+v\n", err)
 		os.Exit(1)
@@ -229,7 +229,7 @@ func main() {
 	}
 	fmt.Printf("\ntrades: %+v\n", trades)
 
-	rates, err := client.GetHistoricRatesForProduct("BTC-USD", godax.QueryParams{godax.Start: "", godax.End: "", godax.Granularity: "60"})
+	rates, err := client.GetHistoricRatesForProduct("BTC-USD", godax.QueryParams{godax.StartParam: "", godax.EndParam: "", godax.GranularityParam: "60"})
 	if err != nil {
 		fmt.Printf("\nerr getting rates: %+v\n", err)
 		os.Exit(1)
@@ -286,21 +286,21 @@ func main() {
 	}
 	fmt.Printf("\noracle: %+v\n", oracle)
 
-	bp, err := client.GetBuyingPower(godax.QueryParams{godax.ProductID: "BTC-USD"})
+	bp, err := client.GetBuyingPower(godax.QueryParams{godax.ProductIDParam: "BTC-USD"})
 	if err != nil {
 		fmt.Printf("\nerr getting bp: %+v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("\nbuying power: %+v\n", bp)
 
-	mp, err := client.GetMarginProfile(godax.QueryParams{godax.ProductID: "BTC-USD"})
+	mp, err := client.GetMarginProfile(godax.QueryParams{godax.ProductIDParam: "BTC-USD"})
 	if err != nil {
 		fmt.Printf("\nerr getting mp: %+v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("\nmargin profile: %+v\n", mp)
 
-	wp, err := client.GetWithdrawalPower(godax.QueryParams{godax.WithdrawalCurrency: "BTC-USD"})
+	wp, err := client.GetWithdrawalPower(godax.QueryParams{godax.CurrencyParam: "BTC-USD"})
 	if err != nil {
 		fmt.Printf("\nerr getting wp: %+v\n", err)
 		os.Exit(1)

@@ -35,20 +35,20 @@ type Param string
 // Available query params
 const (
 	// Used in multiple queries
-	OrderID   Param = "order_id"
-	ProductID Param = "product_id"
-	Status    Param = "status"
+	OrderIDParam   Param = "order_id"
+	ProductIDParam Param = "product_id"
+	StatusParam    Param = "status"
 
-	// Level is used when calling GetProductOrderBook
-	Level Param = "level"
+	// LevelParam is used when calling GetProductOrderBook
+	LevelParam Param = "level"
 
 	// These params are used when calling GetHistoricRatesForProduct
-	Start       Param = "start"
-	End         Param = "end"
-	Granularity Param = "granularity"
+	StartParam       Param = "start"
+	EndParam         Param = "end"
+	GranularityParam Param = "granularity"
 
-	// WithdrawalCurrency is used when calling GetWithdrawalPower
-	WithdrawalCurrency Param = "currency"
+	// CurrencyParam is used when calling GetWithdrawalPower
+	CurrencyParam Param = "currency"
 )
 
 var noBody = []byte{}
@@ -301,7 +301,7 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 // is inserted into our datastore. Once the fill is recorded, a settlement process will settle the fill and credit
 // both trading counterparties. The fee field indicates the fees charged for this individual fill.
 func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
-	if qp[ProductID] == "" && qp[OrderID] == "" {
+	if qp[ProductIDParam] == "" && qp[OrderIDParam] == "" {
 		return nil, ErrMissingOrderOrProductID
 	}
 	method := http.MethodGet
@@ -688,7 +688,7 @@ func (c *Client) GetMarginProfile(qp QueryParams) (MarginProfile, error) {
 	if marginMethodsOnHold {
 		return MarginProfile{}, ErrMarginMethodsOnHold
 	}
-	if qp[ProductID] == "" {
+	if qp[ProductIDParam] == "" {
 		return MarginProfile{}, ErrMissingProductID
 	}
 	method := http.MethodGet
@@ -712,7 +712,7 @@ func (c *Client) GetBuyingPower(qp QueryParams) (BuyingPower, error) {
 	if marginMethodsOnHold {
 		return BuyingPower{}, ErrMarginMethodsOnHold
 	}
-	if qp[ProductID] == "" {
+	if qp[ProductIDParam] == "" {
 		return BuyingPower{}, ErrMissingProductID
 	}
 	method := http.MethodGet
@@ -730,22 +730,22 @@ func (c *Client) GetBuyingPower(qp QueryParams) (BuyingPower, error) {
 // QUERY PARAMETERS
 // Param	Default	Description
 // currency	[required]	The currency to compute withdrawal power for.
-func (c *Client) GetWithdrawalPower(qp QueryParams) (ProfileWithdrawalPower, error) {
+func (c *Client) GetWithdrawalPower(qp QueryParams) (CurrencyWithdrawalPower, error) {
 	if marginMethodsOnHold {
-		return ProfileWithdrawalPower{}, ErrMarginMethodsOnHold
+		return CurrencyWithdrawalPower{}, ErrMarginMethodsOnHold
 	}
-	if qp[WithdrawalCurrency] == "" {
-		return ProfileWithdrawalPower{}, ErrMissingCurrency
+	if qp[CurrencyParam] == "" {
+		return CurrencyWithdrawalPower{}, ErrMissingCurrency
 	}
 	method := http.MethodGet
 	path := "/margin/buying_power"
 
-	var wp []ProfileWithdrawalPower
+	var wp []CurrencyWithdrawalPower
 	if err := c.exec(unixTime(), method, path, noBody, &qp, &wp); err != nil {
-		return ProfileWithdrawalPower{}, err
+		return CurrencyWithdrawalPower{}, err
 	}
 	if len(wp) != 1 {
-		return ProfileWithdrawalPower{}, errors.New("no margin profile withdrawal information found")
+		return CurrencyWithdrawalPower{}, errors.New("no margin profile withdrawal information found")
 	}
 	return wp[0], nil
 }

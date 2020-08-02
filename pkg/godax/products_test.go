@@ -225,7 +225,7 @@ func TestClient_GetProductOrderBook(t *testing.T) {
 		{
 			name:   "when a successful call is made to list trades by product",
 			fields: defaultFields(),
-			args:   args{qp: QueryParams{Level: "1"}},
+			args:   args{qp: QueryParams{LevelParam: "1"}},
 			want: OrderBook{
 				Sequence: 3,
 				Bids: []OrderBookOrder{{
@@ -374,7 +374,7 @@ func TestClient_GetHistoricRatesForProduct(t *testing.T) {
 		{
 			name:   "when a successful call is made to get historic rates for a product",
 			fields: defaultFields(),
-			args:   args{productID: "BTC-USD", qp: QueryParams{Granularity: "60"}},
+			args:   args{productID: "BTC-USD", qp: QueryParams{GranularityParam: "60"}},
 			want: []HistoricRate{{
 				Time:   1415398768,
 				Low:    0.32,
