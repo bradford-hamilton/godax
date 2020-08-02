@@ -249,6 +249,7 @@ func (c *Client) CancelAllOrders(qp QueryParams) (canceledOrderIDs []string, err
 // endpoint once when you start trading to obtain the current state of any open orders. executed_value is the cumulative
 // match size * price and is only present for orders placed after 2016-05-20. Open orders may change state between the
 // request and the response depending on market conditions.
+// TODO: paginate
 func (c *Client) ListOrders(qp QueryParams) ([]Order, error) {
 	method := http.MethodGet
 	path := "/orders"
@@ -300,6 +301,7 @@ func (c *Client) GetOrderByClientOID(orderClientOID string) (Order, error) {
 // Fees are recorded in two stages. Immediately after the matching engine completes a match, the fill
 // is inserted into our datastore. Once the fill is recorded, a settlement process will settle the fill and credit
 // both trading counterparties. The fee field indicates the fees charged for this individual fill.
+// TODO: paginate
 func (c *Client) ListFills(qp QueryParams) ([]Fill, error) {
 	if qp[ProductIDParam] == "" && qp[OrderIDParam] == "" {
 		return nil, ErrMissingOrderOrProductID
@@ -533,6 +535,7 @@ func (c *Client) GetProductTicker(productID string) (Ticker, error) {
 // maker order side. The maker order is the order that was open on the order book. Buy side
 // indicates a down-tick because the maker was a buy order and their order was removed.
 // Conversely, sell side indicates an up-tick.
+// TODO: paginate
 func (c *Client) ListTradesByProduct(productID string) ([]Trade, error) {
 	method := http.MethodGet
 	path := "/products/" + productID + "/trades"
