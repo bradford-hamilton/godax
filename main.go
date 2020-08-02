@@ -286,24 +286,28 @@ func main() {
 	}
 	fmt.Printf("\noracle: %+v\n", oracle)
 
+	// TODO: message coinbase about sandbox margin so I can test these
 	bp, err := client.GetBuyingPower(godax.QueryParams{godax.ProductIDParam: "BTC-USD"})
 	if err != nil {
 		fmt.Printf("\nerr getting bp: %+v\n", err)
-		os.Exit(1)
 	}
 	fmt.Printf("\nbuying power: %+v\n", bp)
 
 	mp, err := client.GetMarginProfile(godax.QueryParams{godax.ProductIDParam: "BTC-USD"})
 	if err != nil {
 		fmt.Printf("\nerr getting mp: %+v\n", err)
-		os.Exit(1)
 	}
 	fmt.Printf("\nmargin profile: %+v\n", mp)
 
-	wp, err := client.GetWithdrawalPower(godax.QueryParams{godax.CurrencyParam: "BTC-USD"})
+	wp, err := client.GetWithdrawalPowerForCurrency(godax.QueryParams{godax.CurrencyParam: "BTC-USD"})
 	if err != nil {
 		fmt.Printf("\nerr getting wp: %+v\n", err)
-		os.Exit(1)
 	}
 	fmt.Printf("\nwithdrawal power: %+v\n", wp)
+
+	allWp, err := client.GetAllWithdrawalPower()
+	if err != nil {
+		fmt.Printf("\nerr getting allWp: %+v\n", err)
+	}
+	fmt.Printf("\nallWp: %+v\n", allWp)
 }

@@ -82,3 +82,36 @@ type CurrencyWithdrawalPower struct {
 	ProfileID       string `json:"profile_id"`
 	WithdrawalPower string `json:"withdrawal_power"`
 }
+
+// AllWithdrawalPower represents the max amount of each currency that you can withdraw from your margin profile. Used
+// for calls to GetAllWithdrawalPower.
+/*
+{
+    "profile_id": "8058d771-2d88-4f0f-ab6e-299c153d4308",
+    "marginable_withdrawal_powers": [
+        {
+            "currency": "ETH",
+            "withdrawal_power": "0.0000000000000000"
+        },
+        {
+            "currency": "BTC",
+            "withdrawal_power": "0.00184821818021342913"
+        },
+        {
+            "currency": "USD",
+            "withdrawal_power": "7.77601796034649750000"
+        },
+        {
+            "currency": "USDC",
+            "withdrawal_power": "1.00332803238200000000"
+        }
+    ]
+}
+*/
+type AllWithdrawalPower struct {
+	ProfileID                  string `json:"profile_id"`
+	MarginableWithdrawalPowers []struct {
+		Currency        string `json:"currency"`
+		WithdrawalPower string `json:"withdrawal_power"`
+	} `json:"marginable_withdrawal_powers"`
+}

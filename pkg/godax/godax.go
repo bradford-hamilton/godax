@@ -725,12 +725,13 @@ func (c *Client) GetBuyingPower(qp QueryParams) (BuyingPower, error) {
 	return bp, nil
 }
 
-// GetWithdrawalPower Returns the max amount of the given currency that you can withdraw
+// GetWithdrawalPowerForCurrency Returns the max amount of the given currency that you can withdraw
 // from your margin profile.
 // QUERY PARAMETERS
 // Param	Default	Description
 // currency	[required]	The currency to compute withdrawal power for.
-func (c *Client) GetWithdrawalPower(qp QueryParams) (CurrencyWithdrawalPower, error) {
+// This endpoint requires either the "view" or "trade" permission.
+func (c *Client) GetWithdrawalPowerForCurrency(qp QueryParams) (CurrencyWithdrawalPower, error) {
 	if marginMethodsOnHold {
 		return CurrencyWithdrawalPower{}, ErrMarginMethodsOnHold
 	}
@@ -738,7 +739,7 @@ func (c *Client) GetWithdrawalPower(qp QueryParams) (CurrencyWithdrawalPower, er
 		return CurrencyWithdrawalPower{}, ErrMissingCurrency
 	}
 	method := http.MethodGet
-	path := "/margin/buying_power"
+	path := "/margin/withdrawal_power"
 
 	var wp []CurrencyWithdrawalPower
 	if err := c.exec(unixTime(), method, path, noBody, &qp, &wp); err != nil {
@@ -748,4 +749,21 @@ func (c *Client) GetWithdrawalPower(qp QueryParams) (CurrencyWithdrawalPower, er
 		return CurrencyWithdrawalPower{}, errors.New("no margin profile withdrawal information found")
 	}
 	return wp[0], nil
+}
+
+// GetAllWithdrawalPower returns the max amount of each currency that you can withdraw from your margin profile.
+// This endpoint requires either the "view" or "trade" permission.
+func (c *Client) GetAllWithdrawalPower() ([]AllWithdrawalPower, error) {
+	if marginMethodsOnHold {
+		return nil, ErrMarginMethodsOnHold
+	}
+	method := http.MethodGet
+	path := "/margin/withdrawal_power_all"
+
+	var wp []AllWithdrawalPower
+	if err := c.exec(unixTime(), method, path, noBody, nil, &wp); err != nil {
+		return nil, err
+	}
+
+	return wp, nil
 }
