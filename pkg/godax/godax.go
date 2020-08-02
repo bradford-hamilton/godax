@@ -34,6 +34,7 @@ type Param string
 
 // Available query params
 const (
+	// Used in multiple queries
 	OrderID   Param = "order_id"
 	ProductID Param = "product_id"
 	Status    Param = "status"
@@ -45,6 +46,9 @@ const (
 	Start       Param = "start"
 	End         Param = "end"
 	Granularity Param = "granularity"
+
+	// WithdrawalCurrency is used when calling GetWithdrawalPower
+	WithdrawalCurrency Param = "currency"
 )
 
 var noBody = []byte{}
@@ -55,8 +59,11 @@ type QueryParams map[Param]string
 // ErrMissingOrderOrProductID TODO: does this feel weird and one offy right now?
 var (
 	ErrMissingOrderOrProductID = errors.New("please provide either an order_id or product_id in your query params")
+	ErrMissingProductID        = errors.New("please provide a product_id in your query params")
 	ErrMissingConversionParams = errors.New("please provide all of the following params: to, from, amount")
 	ErrCoinbaseProAPIChange    = errors.New("there appears to have been a coinbase pro API change. Please open a new issue on godax, thanks")
+	ErrMarginMethodsOnHold     = errors.New("all methods interacting with margin are on hold until I can test on the sandbox")
+	ErrMissingCurrency         = errors.New("please provide the WithdrawalCurrency param")
 )
 
 // NewClient returns a godax Client that is hooked up to the live REST and web socket APIs.
@@ -668,4 +675,77 @@ func (c *Client) GetOracle() (Oracle, error) {
 		return Oracle{}, err
 	}
 	return o, nil
+}
+
+var marginMethodsOnHold = true
+
+// GetMarginProfile gets information about your margin profile, such as your current
+// equity percentage. This endpoint requires either the "view" or "trade" permission.
+// QUERY PARAMETERS
+// Param		Description
+// product_id	[required]	The product ID to compute buying/selling/borrow power for.
+func (c *Client) GetMarginProfile(qp QueryParams) (MarginProfile, error) {
+	if marginMethodsOnHold {
+		return MarginProfile{}, ErrMarginMethodsOnHold
+	}
+	if qp[ProductID] == "" {
+		return MarginProfile{}, ErrMissingProductID
+	}
+	method := http.MethodGet
+	path := "/margin/profile_information"
+
+	var mp MarginProfile
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &mp); err != nil {
+		return MarginProfile{}, err
+	}
+	return mp, nil
+}
+
+// GetBuyingPower gets your buying power and selling power for a particular product.
+// For example: On BTC-USD, "buying power" refers to how much USD you can use to buy
+// BTC, and "selling power" refers to how much BTC you can sell for USD. This endpoint
+// requires either the "view" or "trade" permission.
+// QUERY PARAMETERS
+// Param		Default	Description
+// product_id	[required]	The product ID to compute buying/selling power for.
+func (c *Client) GetBuyingPower(qp QueryParams) (BuyingPower, error) {
+	if marginMethodsOnHold {
+		return BuyingPower{}, ErrMarginMethodsOnHold
+	}
+	if qp[ProductID] == "" {
+		return BuyingPower{}, ErrMissingProductID
+	}
+	method := http.MethodGet
+	path := "/margin/buying_power"
+
+	var bp BuyingPower
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &bp); err != nil {
+		return BuyingPower{}, err
+	}
+	return bp, nil
+}
+
+// GetWithdrawalPower Returns the max amount of the given currency that you can withdraw
+// from your margin profile.
+// QUERY PARAMETERS
+// Param	Default	Description
+// currency	[required]	The currency to compute withdrawal power for.
+func (c *Client) GetWithdrawalPower(qp QueryParams) (ProfileWithdrawalPower, error) {
+	if marginMethodsOnHold {
+		return ProfileWithdrawalPower{}, ErrMarginMethodsOnHold
+	}
+	if qp[WithdrawalCurrency] == "" {
+		return ProfileWithdrawalPower{}, ErrMissingCurrency
+	}
+	method := http.MethodGet
+	path := "/margin/buying_power"
+
+	var wp []ProfileWithdrawalPower
+	if err := c.exec(unixTime(), method, path, noBody, &qp, &wp); err != nil {
+		return ProfileWithdrawalPower{}, err
+	}
+	if len(wp) != 1 {
+		return ProfileWithdrawalPower{}, errors.New("no margin profile withdrawal information found")
+	}
+	return wp[0], nil
 }
