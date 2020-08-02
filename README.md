@@ -52,12 +52,12 @@ https://docs.pro.coinbase.com
 - [x] Reports
 - [x] Retry logic
 - [x] Oracle
+- [partial] Margin
 
 ## Still needs:
 - [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
 - [ ] Deposits
 - [ ] Withdrawals
-- [ ] Margin
 - [ ] WebSocket feed and it's channels
 
 ## Development
