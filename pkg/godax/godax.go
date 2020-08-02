@@ -767,3 +767,21 @@ func (c *Client) GetAllWithdrawalPower() ([]AllWithdrawalPower, error) {
 
 	return wp, nil
 }
+
+// GetMarginExitPlan returns a liquidation strategy that can be performed to get your equity
+// percentage back to an acceptable level (i.e. your initial equity percentage).
+// This endpoint requires either the "view" or "trade" permission.
+func (c *Client) GetMarginExitPlan() (ExitPlan, error) {
+	if marginMethodsOnHold {
+		return ExitPlan{}, ErrMarginMethodsOnHold
+	}
+	method := http.MethodGet
+	path := "/margin/exit_plan"
+
+	var exit ExitPlan
+	if err := c.exec(unixTime(), method, path, noBody, nil, &exit); err != nil {
+		return ExitPlan{}, err
+	}
+
+	return exit, nil
+}
