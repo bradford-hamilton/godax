@@ -343,7 +343,11 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	method := http.MethodPost
 	path := "/conversions"
 
-	body, err := json.Marshal(conversionReq{From: from, To: to, Amount: amount})
+	body, err := json.Marshal(map[string]string{
+		"from":   from,
+		"to":     to,
+		"amount": amount,
+	})
 	if err != nil {
 		return Conversion{}, err
 	}
@@ -352,7 +356,6 @@ func (c *Client) StableCoinConversion(from string, to string, amount string) (Co
 	if err := c.exec(unixTime(), method, path, body, nil, &conv); err != nil {
 		return Conversion{}, err
 	}
-
 	return conv, nil
 }
 
@@ -793,14 +796,14 @@ func (c *Client) GetMarginExitPlan() (ExitPlan, error) {
 // QUERY PARAMETERS
 // Param	Default	Description
 // after	[optional]	Request liquidation history after this date.
-func (c *Client) ListLiquidationHistory(qp QueryParams) ([]LiquidationHistory, error) {
+func (c *Client) ListLiquidationHistory(qp QueryParams) ([]LiquidationEvent, error) {
 	if marginMethodsOnHold {
 		return nil, ErrMarginMethodsOnHold
 	}
 	method := http.MethodGet
 	path := "/margin/liquidation_history"
 
-	var exit []LiquidationHistory
+	var exit []LiquidationEvent
 	if err := c.exec(unixTime(), method, path, noBody, &qp, &exit); err != nil {
 		return nil, err
 	}

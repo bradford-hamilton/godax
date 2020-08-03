@@ -8,26 +8,6 @@ import (
 // one of trading_disabled, cancel_only, post_only, limit_only can be true at once. If
 // none are true, the product is trading normally. Product ID will not change once assigned
 // to a product but all other fields ares subject to change.
-/*
-{
-    "id": "BTC-USD",
-    "display_name": "BTC/USD",
-    "base_currency": "BTC",
-    "quote_currency": "USD",
-    "base_increment": "0.00000001",
-    "quote_increment": "0.01000000",
-    "base_min_size": "0.00100000",
-    "base_max_size": "280.00000000",
-    "min_market_funds": "5",
-    "max_market_funds": "1000000",
-    "status": "online",
-    "status_message": "",
-    "cancel_only": false,
-    "limit_only": false,
-    "post_only": false,
-    "trading_disabled": false
-}
-*/
 type Product struct {
 	// ID represents the product ID, ie. BTC-USD
 	ID string `json:"id"`
@@ -70,10 +50,12 @@ type Product struct {
 	// CancelOnly indicates indicates whether this product only accepts cancel requests for orders
 	CancelOnly bool `json:"cancel_only"`
 
-	// LimitOnly indicates whether this product only accepts limit orders. When LimitOnly is true, matching can occur if a limit order crosses the book.
+	// LimitOnly indicates whether this product only accepts limit orders.
+	// When LimitOnly is true, matching can occur if a limit order crosses the book.
 	LimitOnly bool `json:"limit_only"`
 
-	// PostOnly indicates whether only maker orders can be placed. No orders will be matched when post_only mode is active
+	// PostOnly indicates whether only maker orders can be placed.
+	// No orders will be matched when post_only mode is active
 	PostOnly bool `json:"post_only"`
 
 	// TradingDisabled indicates whether trading is currently restricted on this product.
@@ -81,23 +63,8 @@ type Product struct {
 	TradingDisabled bool `json:"trading_disabled"`
 }
 
-// OrderBook represents a list of orders for a product. TODO: maybe notify coinbase. The docs say sequence is a string as
-// it appears below, however it is an int.
-/*
-{
-    "sequence": "3",
-    "bids": [
-        [ price, size, num-orders ],
-        [ "295.96", "4.39088265", 2 ],
-        ...
-    ],
-    "asks": [
-        [ price, size, num-orders ],
-        [ "295.97", "25.23542881", 12 ],
-        ...
-    ]
-}
-*/
+// OrderBook represents a list of orders for a product. TODO: maybe notify coinbase.
+// The docs say sequence is a string as it appears below, however it is an int.
 type OrderBook struct {
 	Sequence int              `json:"sequence"`
 	Bids     []OrderBookOrder `json:"bids"`
@@ -148,17 +115,6 @@ func (o *OrderBookOrder) UnmarshalJSON(b []byte) error {
 }
 
 // Ticker represents a snapshot of a trade (tick), best bid/ask and 24h volume.
-/*
-{
-  "trade_id": 4729088,
-  "price": "333.99",
-  "size": "0.193",
-  "bid": "333.98",
-  "ask": "333.99",
-  "volume": "5957.11914015",
-  "time": "2015-11-14T20:46:03.511254Z"
-}
-*/
 type Ticker struct {
 	TradeID int    `json:"trade_id"`
 	Price   string `json:"price"`
@@ -169,14 +125,7 @@ type Ticker struct {
 	Time    string `json:"time"`
 }
 
-// HistoricRate represents a past rate for a product. We will marshal into
-// a struct for much more clarity/access around the data.
-/*
-[
-    [ time, low, high, open, close, volume ],
-    [ 1415398768, 0.32, 4.2, 0.35, 4.2, 12.3 ],
-]
-*/
+// HistoricRate represents a past rate for a product.
 type HistoricRate struct {
 	Time   float64 `json:"time"`
 	Low    float64 `json:"low"`
@@ -187,16 +136,6 @@ type HistoricRate struct {
 }
 
 // DayStat represents a 24 hour statistic for a product.
-/*
-{
-    "open": "6745.61000000",
-    "high": "7292.11000000",
-    "low": "6650.00000000",
-    "volume": "26185.51325269",
-    "last": "6813.19000000",
-    "volume_30day": "1019451.11188405"
-}
-*/
 type DayStat struct {
 	Open        string `json:"open"`
 	High        string `json:"high"`

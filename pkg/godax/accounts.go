@@ -1,17 +1,6 @@
 package godax
 
 // ListAccount represents a trading account for a coinbase pro profile
-/*
-	{
-		"id": "71452118-efc7-4cc4-8780-a5e22d4baa53",
-		"currency": "BTC",
-		"balance": "0.0000000000000000",
-		"available": "0.0000000000000000",
-		"hold": "0.0000000000000000",
-		"profile_id": "75da88c5-05bf-4f54-bc85-5c775bd68254"
-
-	}
-*/
 type ListAccount struct {
 	// ID - the account ID associated with the coinbase pro profile
 	ID string `json:"id"`
@@ -30,15 +19,6 @@ type ListAccount struct {
 }
 
 // Account describes information for a single account
-/*
-	{
-		"id": "a1b2c3d4",
-		"balance": "1.100",
-		"holds": "0.100",
-		"available": "1.00",
-		"currency": "USD"
-	}
-*/
 type Account struct {
 	// ID - the account ID associated with the coinbase pro profile
 	ID string `json:"id"`
@@ -57,20 +37,6 @@ type Account struct {
 }
 
 // AccountActivity represents an increase or decrease in your account balance.
-/*
-   {
-       "id": "100",
-       "created_at": "2014-11-07T08:19:27.028459Z",
-       "amount": "0.001",
-       "balance": "239.669",
-       "type": "fee",
-       "details": {
-           "order_id": "d50ec984-77a8-460a-b958-66f114b0de9b",
-           "trade_id": "74",
-           "product_id": "BTC-USD"
-       }
-   }
-*/
 type AccountActivity struct {
 	// ID - the account ID associated with the coinbase pro profile
 	ID string `json:"id"`
@@ -110,17 +76,6 @@ type ActivityDetail struct {
 }
 
 // AccountHold describes a hold on your coinbase pro account.
-/*
-{
-	"id": "82dcd140-c3c7-4507-8de4-2c529cd1a28f",
-	"account_id": "e0b3f39a-183d-453e-b754-0c13e5bab0b3",
-	"created_at": "2014-11-06T10:34:47.123456Z",
-	"updated_at": "2014-11-06T10:40:47.123456Z",
-	"amount": "4.23",
-	"type": "order",
-	"ref": "0a205de4-dd35-4370-a285-fe8fc375a273",
-}
-*/
 type AccountHold struct {
 	// ID - the hold ID
 	ID string `json:"id"`
@@ -146,70 +101,6 @@ type AccountHold struct {
 }
 
 // CoinbaseAccount represents a Coinbase (non-pro) account.
-/*
-[
-    {
-        "id": "fc3a8a57-7142-542d-8436-95a3d82e1622",
-        "name": "ETH Wallet",
-        "balance": "0.00000000",
-        "currency": "ETH",
-        "type": "wallet",
-        "primary": false,
-        "active": true
-    },
-    {
-        "id": "2ae3354e-f1c3-5771-8a37-6228e9d239db",
-        "name": "USD Wallet",
-        "balance": "0.00",
-        "currency": "USD",
-        "type": "fiat",
-        "primary": false,
-        "active": true,
-        "wire_deposit_information": {
-            "account_number": "0199003122",
-            "routing_number": "026013356",
-            "bank_name": "Metropolitan Commercial Bank",
-            "bank_address": "99 Park Ave 4th Fl New York, NY 10016",
-            "bank_country": {
-                "code": "US",
-                "name": "United States"
-            },
-            "account_name": "Coinbase, Inc",
-            "account_address": "548 Market Street, #23008, San Francisco, CA 94104",
-            "reference": "BAOCAEUX"
-        }
-    },
-    {
-        "id": "1bfad868-5223-5d3c-8a22-b5ed371e55cb",
-        "name": "BTC Wallet",
-        "balance": "0.00000000",
-        "currency": "BTC",
-        "type": "wallet",
-        "primary": true,
-        "active": true
-    },
-    {
-        "id": "2a11354e-f133-5771-8a37-622be9b239db",
-        "name": "EUR Wallet",
-        "balance": "0.00",
-        "currency": "EUR",
-        "type": "fiat",
-        "primary": false,
-        "active": true,
-        "sepa_deposit_information": {
-            "iban": "EE957700771001355096",
-            "swift": "LHVBEE22",
-            "bank_name": "AS LHV Pank",
-            "bank_address": "Tartu mnt 2, 10145 Tallinn, Estonia",
-            "bank_country_name": "Estonia",
-            "account_name": "Coinbase UK, Ltd.",
-            "account_address": "9th Floor, 107 Cheapside, London, EC2V 6DN, United Kingdom",
-            "reference": "CBAEUXOVFXOXYX"
-        }
-    },
-    ...
-]
-*/
 type CoinbaseAccount struct {
 	ID                     string          `json:"id"`
 	Name                   string          `json:"name"`
@@ -263,30 +154,11 @@ type UKDepositInfo struct {
 
 // BankCountry represents a bank country object in a WireDepositInfo.
 type BankCountry struct {
-	// Code defines the country code.
 	Code string `json:"code"`
-
-	// Name defines the country name.
 	Name string `json:"name"`
 }
 
 // UserAccount is used for fetching trailing volumes for your user
-/*
-[
-    {
-        "product_id": "BTC-USD",
-        "exchange_volume": "11800.00000000",
-        "volume": "100.00000000",
-        "recorded_at": "1973-11-29T00:05:01.123456Z"
-    },
-    {
-        "product_id": "LTC-USD",
-        "exchange_volume": "51010.04100000",
-        "volume": "2010.04100000",
-        "recorded_at": "1973-11-29T00:05:02.123456Z"
-    }
-]
-*/
 type UserAccount struct {
 	ProductID      string `json:"product_id"`
 	ExchangeVolume string `json:"exchange_volume"`

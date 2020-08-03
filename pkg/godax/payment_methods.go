@@ -2,52 +2,6 @@ package godax
 
 // PaymentMethod represents a payment method connected the the api user's account and
 // holds metadata like type, name, currency, a list of limits, etc.
-/*
-[
-    {
-        "id": "bc6d7162-d984-5ffa-963c-a493b1c1370b",
-        "type": "ach_bank_account",
-        "name": "Bank of America - eBan... ********7134",
-        "currency": "USD",
-        "primary_buy": true,
-        "primary_sell": true,
-        "allow_buy": true,
-        "allow_sell": true,
-        "allow_deposit": true,
-        "allow_withdraw": true,
-        "limits": {
-            "buy": [
-                {
-                    "period_in_days": 1,
-                    "total": {
-                        "amount": "10000.00",
-                        "currency": "USD"
-                    },
-                    "remaining": {
-                        "amount": "10000.00",
-                        "currency": "USD"
-                    }
-                }
-            ],
-            "instant_buy": [...],
-            "sell": [
-                {
-                    "period_in_days": 1,
-                    "total": {
-                        "amount": "10000.00",
-                        "currency": "USD"
-                    },
-                    "remaining": {
-                        "amount": "10000.00",
-                        "currency": "USD"
-                    }
-                }
-            ],
-            "deposit": [...]
-        }
-    }
-]
-*/
 type PaymentMethod struct {
 	ID            string   `json:"id"`
 	Type          string   `json:"type"`

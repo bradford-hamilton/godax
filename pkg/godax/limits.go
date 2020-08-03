@@ -1,35 +1,14 @@
 package godax
 
-// ExchangeLimit represents info about your payment method transfer limits, as well as buy/sell limits per currency.
-/*
-{
-  "limit_currency": "USD",
-  "transfer_limits": {
-    "ach": {
-      "BAT": {
-        "max": "21267.54245368",
-        "remaining": "21267.54245368",
-        "period_in_days": 7
-      }
-    },
-    ...
-    "buy": {
-      "BAT": {
-        "max": "212677.90003268",
-        "remaining": "212677.90003268",
-        "period_in_days": 7
-      }
-    },
-    ...
-  }
-}
-*/
+// ExchangeLimit represents info about your payment method transfer
+// limits, as well as buy/sell limits per currency.
 type ExchangeLimit struct {
 	LimitCurrency  string         `json:"limit_currency"`
 	TransferLimits TransferLimits `json:"transfer_limits"`
 }
 
-// TransferLimits represents info about your payment method transfer limits, as well as buy/sell limits per currency.
+// TransferLimits represents info about your payment method transfer
+// limits, as well as buy/sell limits per currency.
 type TransferLimits struct {
 	Ach                  map[string]Limit `json:"ach"`
 	AchNoBalance         map[string]Limit `json:"ach_no_balance"`
@@ -44,16 +23,7 @@ type TransferLimits struct {
 	Sell                 map[string]Limit `json:"sell"`
 }
 
-// Limit represents the actual limit metadata per currency
-/*
-{
-	"BAT": {
-		"max": "212677.90003268",
-		"remaining": "212677.90003268",
-		"period_in_days": 7
-	}
-}
-*/
+// Limit represents the actual limit metadata for a currency.
 type Limit struct {
 	// Max represents the max you can use per currency
 	Max float64 `json:"max"`
