@@ -6,7 +6,7 @@ import (
 )
 
 func TestClient_GetOracle(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		want    Oracle

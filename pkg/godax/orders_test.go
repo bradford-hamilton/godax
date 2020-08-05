@@ -200,7 +200,7 @@ func TestClient_CancelOrderByID(t *testing.T) {
 				httpClient:  mockClient,
 			}
 
-			gotCanceledOrderID, err := c.CancelOrderByID(tt.args.orderID, tt.args.qp)
+			err := c.CancelOrderByID(tt.args.orderID, tt.args.qp)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Client.CancelOrderByID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -211,10 +211,6 @@ func TestClient_CancelOrderByID(t *testing.T) {
 			}
 
 			validateHeaders(t, c)
-
-			if gotCanceledOrderID != tt.wantCanceledOrderID {
-				t.Errorf("Client.CancelOrderByID() = %v, want %v", gotCanceledOrderID, tt.wantCanceledOrderID)
-			}
 		})
 	}
 }

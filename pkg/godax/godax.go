@@ -174,22 +174,22 @@ func (c *Client) PlaceOrder(order OrderParams) (Order, error) {
 // purged. This means the order details will not be available with GetOrderByID or GetOrderByClientOID.
 // The product ID of the order is not required so if you don't have it you can pass nil here.
 // The request will be more performant if you include it. This endpoint requires the "trade" permission.
-func (c *Client) CancelOrderByID(orderID string, qp QueryParams) (canceledOrderID string, err error) {
+func (c *Client) CancelOrderByID(orderID string, qp QueryParams) error {
 	method := http.MethodDelete
 	path := "/orders/" + orderID
 
 	req, sig, err := c.createAndSignReq(unixTime(), method, path, noBody, &qp)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	res, err := c.do(unixTime(), sig, req)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer res.Body.Close()
 
-	return orderID, nil
+	return nil
 }
 
 // CancelOrderByClientOID cancels a previously placed order. Order must belong to the profile that

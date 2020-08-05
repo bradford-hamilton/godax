@@ -543,7 +543,7 @@ import (
 // 	type args struct {
 // 		qp QueryParams
 // 	}
-// 	tests := []struct {
+// 	tests := [...]struct {
 // 		name    string
 // 		fields  fields
 // 		args    args
@@ -598,7 +598,7 @@ import (
 // }
 
 func TestClient_GetMarginStatus(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		name    string
 		fields  fields
 		want    MarginStatus
