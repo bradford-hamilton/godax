@@ -55,7 +55,7 @@ https://docs.pro.coinbase.com
 - [x] Margin
 
 ## Still needs:
-- [in-progress] [Pagination support](https://docs.pro.coinbase.com/#pagination)
+- [ ] [Pagination support](https://docs.pro.coinbase.com/#pagination)
 - [ ] Deposits
 - [ ] Withdrawals
 - [ ] WebSocket feed and it's channels
